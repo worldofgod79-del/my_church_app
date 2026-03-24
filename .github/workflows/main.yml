@@ -6,15 +6,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Updated to v4
+      - uses: actions/checkout@v4
+      
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter pub get
-      - run: flutter build web --release
-      - run: flutter build apk --release
+
+      # ఇక్కడ మనం ప్రాజెక్ట్‌కి వెబ్ మరియు ఆండ్రాయిడ్ సపోర్ట్ ని యాడ్ చేస్తున్నాం
+      - name: Create Platform Folders
+        run: |
+          flutter create . --platforms web,android
+          flutter pub get
+
+      - name: Build Web
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Build APK
+        run: flutter build apk --release
+
       - name: Upload APK
-        uses: actions/upload-artifact@v4 # Fixed: Updated from v3 to v4
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      # వెబ్ ప్రివ్యూ చూడటానికి GitHub Pages లోకి పుష్ చేస్తుంది
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
