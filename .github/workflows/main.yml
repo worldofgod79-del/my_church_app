@@ -2,6 +2,11 @@ name: Build Flutter App
 on:
   push:
     branches: [ main ]
+
+# ఇది చాలా ముఖ్యం - GitHub కి రాసే అనుమతి ఇస్తుంది
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,7 +17,6 @@ jobs:
         with:
           channel: 'stable'
 
-      # ఇక్కడ మనం ప్రాజెక్ట్‌కి వెబ్ మరియు ఆండ్రాయిడ్ సపోర్ట్ ని యాడ్ చేస్తున్నాం
       - name: Create Platform Folders
         run: |
           flutter create . --platforms web,android
@@ -30,7 +34,6 @@ jobs:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      # వెబ్ ప్రివ్యూ చూడటానికి GitHub Pages లోకి పుష్ చేస్తుంది
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
