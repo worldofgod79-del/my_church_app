@@ -1,11 +1,20 @@
-import 'package:go_router/go_router.dart';
-import '../features/splash/splash_screen.dart';
-import '../features/home/home_screen.dart';
+import 'package:flutter/material.dart';
+import 'core/app_routes.dart';
 
-final GoRouter router = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-  ],
-);
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: 'Church App',
+      debugShowCheckedModeBanner: false,
+      routerConfig: router,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
+    );
+  }
+}
