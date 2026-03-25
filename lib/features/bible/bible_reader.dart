@@ -22,8 +22,7 @@ class _BibleReaderState extends State<BibleReader> {
   Map<String, dynamic> _chapters = {};
   String _currentChapter = "1";
   String _currentVerse = "1";
-  bool _loading = true;
-  bool _isDark = false;
+  bool _loading = true, _isDark = false;
   double _fontSize = 20.0;
   List<String> _bookmarks = [];
   Map<String, int> _verseColors = {};
@@ -56,7 +55,7 @@ class _BibleReaderState extends State<BibleReader> {
     }
   }
 
-  void _save() async {
+  _save() async {
     final p = await SharedPreferences.getInstance();
     p.setBool('isDark', _isDark);
     p.setDouble('fontSize', _fontSize);
@@ -66,51 +65,46 @@ class _BibleReaderState extends State<BibleReader> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    
-    var chaptersList = _chapters.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))));
+    var chapters = _chapters.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
     var versesMap = _chapters[_currentChapter] ?? {};
     var versesList = versesMap.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
 
-    final Color bgColor = _isDark ? const Color(0xFF000000) : const Color(0xFFFDFDFD);
-    final Color txtColor = _isDark ? Colors.white70 : Colors.black87;
-    final Color appBarBg = _isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final bgColor = _isDark ? const Color(0xFF121212) : const Color(0xFFFCF9F5);
+    final txtColor = _isDark ? Colors.white70 : Colors.black87;
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: appBarBg,
-        elevation: 0.5,
-        foregroundColor: _isDark ? Colors.white : Colors.black,
-        // పుస్తకం పేరు మీద నొక్కితే వెనక్కి వెళ్లడానికి
-        title: GestureDetector(
+        elevation: 2,
+        backgroundColor: _isDark ? Colors.black : const Color(0xFF1A237E),
+        foregroundColor: Colors.white,
+        titleSpacing: 0,
+        title: InkWell(
           onTap: () => context.pop(),
-          child: Text(widget.bookName, 
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue)),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(widget.bookName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFD4AF37))),
+          ),
         ),
         actions: [
-          // చాప్టర్ మరియు వచనం సెలెక్టర్లు బయటే ఉంటాయి
-          _dropdown(_currentChapter, chaptersList, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); })),
-          _dropdown(_currentVerse, versesList, (v) { 
+          _drop(_currentChapter, chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); })),
+          _drop(_currentVerse, versesList, (v) { 
             setState(() => _currentVerse = v!); 
             _scrollController.scrollTo(index: int.parse(v!) - 1, duration: const Duration(milliseconds: 400)); 
           }),
-          
-          // సెర్చ్ ఐకాన్
-          IconButton(icon: const Icon(Icons.search, size: 22), onPressed: () => context.push('/search?book=${widget.bookName}')),
-          
-          // సెట్టింగ్స్ గేర్ మెనూ (Zoom, Theme ఇందులోకి వెళ్లాయి)
+          IconButton(icon: const Icon(Icons.search, size: 20), onPressed: () => context.push('/search?book=${widget.bookName}')),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.settings, size: 22),
+            icon: const Icon(Icons.settings, size: 20, color: Color(0xFFD4AF37)),
             onSelected: (val) {
               if (val == 'dark') setState(() { _isDark = !_isDark; _save(); });
-              if (val == 'zoomIn') setState(() { if(_fontSize < 45) _fontSize += 2; _save(); });
-              if (val == 'zoomOut') setState(() { if(_fontSize > 12) _fontSize -= 2; _save(); });
+              if (val == 'in') setState(() { if(_fontSize < 45) _fontSize += 2; _save(); });
+              if (val == 'out') setState(() { if(_fontSize > 12) _fontSize -= 2; _save(); });
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 'dark', child: ListTile(leading: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round), title: const Text("Theme"))),
-              const PopupMenuItem(value: 'zoomIn', child: ListTile(leading: Icon(Icons.add_circle_outline), title: const Text("Zoom In"))),
-              const PopupMenuItem(value: 'zoomOut', child: ListTile(leading: Icon(Icons.remove_circle_outline), title: const Text("Zoom Out"))),
+              const PopupMenuItem(value: 'in', child: ListTile(leading: Icon(Icons.add_circle), title: const Text("Zoom In"))),
+              const PopupMenuItem(value: 'out', child: ListTile(leading: Icon(Icons.remove_circle), title: const Text("Zoom Out"))),
             ],
           ),
         ],
@@ -130,22 +124,19 @@ class _BibleReaderState extends State<BibleReader> {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => setState(() => isSelected ? _selectedVerses.remove(vNum) : _selectedVerses.add(vNum)),
-            onLongPress: () {
-              setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); });
-              _save();
-            },
+            onLongPress: () { setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); }); _save(); },
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.blue.withOpacity(0.1) : (colorVal != null ? Color(colorVal) : Colors.transparent),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("$vNum. ", style: TextStyle(fontSize: _fontSize * 0.7, color: Colors.blue, fontWeight: FontWeight.bold)),
-                  Expanded(child: Text(vText, style: TextStyle(fontSize: _fontSize, height: 1.6, color: txtColor))),
-                  if (isBookmarked) const Icon(Icons.bookmark, size: 16, color: Colors.blue),
+                  Text("$vNum. ", style: TextStyle(fontSize: _fontSize * 0.7, color: const Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+                  Expanded(child: Text(vText, style: TextStyle(fontSize: _fontSize, height: 1.7, color: txtColor))),
+                  if (isBookmarked) const Icon(Icons.bookmark, size: 16, color: Color(0xFFD4AF37)),
                 ],
               ),
             ),
@@ -156,15 +147,15 @@ class _BibleReaderState extends State<BibleReader> {
     );
   }
 
-  Widget _dropdown(String val, List<String> items, Function(String?) onChg) {
+  Widget _drop(String val, List<String> items, Function(String?) onChg) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 3),
-      padding: const EdgeInsets.symmetric(horizontal: 6),
-      decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
+      decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(5)),
       child: DropdownButton<String>(
-        value: val, underline: Container(), items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-        onChanged: onChg, dropdownColor: _isDark ? Colors.black : Colors.white,
-        style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13),
+        value: val, underline: Container(), dropdownColor: const Color(0xFF1A237E),
+        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(color: Colors.white, fontSize: 13)))).toList(),
+        onChanged: onChg,
       ),
     );
   }
@@ -172,7 +163,7 @@ class _BibleReaderState extends State<BibleReader> {
   Widget _buildSelectionBar() {
     return Container(
       height: 70, margin: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: const Color(0xFF007AFF), borderRadius: BorderRadius.circular(20), boxShadow: [const BoxShadow(color: Colors.black26, blurRadius: 15)]),
+      decoration: BoxDecoration(color: const Color(0xFF1A237E), borderRadius: BorderRadius.circular(20), boxShadow: [const BoxShadow(color: Colors.black45, blurRadius: 15)]),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
