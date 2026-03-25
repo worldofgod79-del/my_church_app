@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Clipboard కోసం
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:share_plus/share_plus.dart';
 import 'bible_service.dart';
 
 class BibleReader extends StatefulWidget {
@@ -20,6 +23,10 @@ class _BibleReaderState extends State<BibleReader> {
   String _currentVerse = "1";
   bool _loading = true;
 
+  // Bookmarks మరియు Colors సేవ్ చేయడానికి
+  List<String> _bookmarks = [];
+  Map<String, int> _verseColors = {};
+
   @override
   void initState() {
     super.initState();
@@ -28,19 +35,112 @@ class _BibleReaderState extends State<BibleReader> {
 
   _load() async {
     final data = await _service.loadBook(widget.bookName);
+    final prefs = await SharedPreferences.getInstance();
+    
     setState(() {
       _chapters = data["chapters"];
       if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
       if (widget.initialVerse != null) _currentVerse = widget.initialVerse!;
       _loading = false;
+      
+      // సేవ్ చేసిన డేటాని లోడ్ చేయడం
+      _bookmarks = prefs.getStringList('bookmarks') ?? [];
+      String colorData = prefs.getString('verse_colors') ?? "{}";
+      _verseColors = Map<String, int>.from(json.decode(colorData));
     });
 
-    // సెర్చ్ నుండి వచ్చినప్పుడు ఆ వచనం దగ్గరికి స్క్రోల్ అవ్వడం
     Future.delayed(const Duration(milliseconds: 600), () {
       if (widget.initialVerse != null && _scrollController.isAttached) {
         _scrollController.jumpTo(index: int.parse(widget.initialVerse!) - 1);
       }
     });
+  }
+
+  // డేటాను సేవ్ చేసే ఫంక్షన్లు
+  _saveBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('bookmarks', _bookmarks);
+  }
+
+  _saveColors() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('verse_colors', json.encode(_verseColors));
+  }
+
+  // Long Press మెనూ
+  void _showVerseOptions(String vNum, String vText) {
+    String key = "${widget.bookName}_${_currentChapter}_$vNum";
+    bool isBookmarked = _bookmarks.contains(key);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: Colors.brown),
+              title: Text(isBookmarked ? "Remove Bookmark" : "Add Bookmark"),
+              onTap: () {
+                setState(() {
+                  isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key);
+                });
+                _saveBookmarks();
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.copy, color: Colors.blue),
+              title: const Text("Copy Verse"),
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: "${widget.bookName} ${_currentChapter}:$vNum - $vText"));
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied to clipboard")));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share, color: Colors.green),
+              title: const Text("Share Verse"),
+              onTap: () {
+                Share.share("${widget.bookName} ${_currentChapter}:$vNum\n$vText\n\n- Sent via Telugu Bible App");
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text("Color Marking:", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _colorIcon(key, Colors.yellow[200]!),
+                _colorIcon(key, Colors.green[200]!),
+                _colorIcon(key, Colors.blue[200]!),
+                _colorIcon(key, Colors.pink[200]!),
+                IconButton(icon: const Icon(Icons.format_color_reset), onPressed: () {
+                  setState(() => _verseColors.remove(key));
+                  _saveColors();
+                  Navigator.pop(context);
+                }),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _colorIcon(String key, Color color) {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _verseColors[key] = color.value);
+        _saveColors();
+        Navigator.pop(context);
+      },
+      child: CircleAvatar(backgroundColor: color, radius: 15),
+    );
   }
 
   List<String> _sort(Iterable<String> k) => k.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
@@ -58,11 +158,7 @@ class _BibleReaderState extends State<BibleReader> {
         backgroundColor: Colors.brown[800],
         foregroundColor: Colors.white,
         actions: [
-          // ఇక్కడ కూడా సెర్చ్ బటన్ యాడ్ చేశాను
-          IconButton(
-            icon: const Icon(Icons.search), 
-            onPressed: () => context.push('/search?book=${widget.bookName}')
-          ),
+          IconButton(icon: const Icon(Icons.search), onPressed: () => context.push('/search?book=${widget.bookName}')),
           DropdownButton<String>(
             value: _currentChapter,
             dropdownColor: Colors.brown[900],
@@ -93,13 +189,34 @@ class _BibleReaderState extends State<BibleReader> {
           padding: const EdgeInsets.all(16),
           itemBuilder: (context, i) {
             String vNum = sortedVerses[i];
+            String vText = verses[vNum].toString().trim();
+            String key = "${widget.bookName}_${_currentChapter}_$vNum";
+            
             bool isSel = vNum == _currentVerse;
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              color: isSel ? Colors.brown.withOpacity(0.1) : Colors.transparent,
-              child: Text(
-                "$vNum. ${verses[vNum]}", 
-                style: TextStyle(fontSize: 20, height: 1.6, color: isSel ? Colors.red : Colors.black87)
+            bool isBookmarked = _bookmarks.contains(key);
+            int? colorValue = _verseColors[key];
+
+            return GestureDetector(
+              onLongPress: () => _showVerseOptions(vNum, vText),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+                decoration: BoxDecoration(
+                  color: colorValue != null ? Color(colorValue) : (isSel ? Colors.brown.withOpacity(0.1) : Colors.transparent),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isBookmarked) const Icon(Icons.bookmark, size: 16, color: Colors.brown),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        "$vNum. $vText", 
+                        style: TextStyle(fontSize: 20, height: 1.6, color: isSel ? Colors.red : Colors.black87)
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
