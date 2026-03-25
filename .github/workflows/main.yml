@@ -11,15 +11,13 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # ఇక్కడ మనం లేటెస్ట్ ఫ్లట్టర్ వెర్షన్ వాడుతున్నాం
-          flutter-version: '3.24.x' 
           
       - name: Create Platform Folders
         run: |
           flutter create . --platforms web,android
           flutter pub get
 
-      # ఈ కమాండ్ లో --no-wasm మరియు --web-renderer html యాడ్ చేశాను
+      # ఇక్కడ మనం --no-wasm వాడటం వల్ల వెబ్ బిల్డ్ సక్సెస్ అవుతుంది
       - name: Build Web
         run: |
           flutter build web --release --web-renderer html --no-wasm --base-href "/${{ github.event.repository.name }}/"
