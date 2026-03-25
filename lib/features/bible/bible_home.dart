@@ -7,33 +7,73 @@ class BibleHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final books = BibleService().bookNames;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("పరిశుద్ధ గ్రంథము"),
-        backgroundColor: Colors.brown,
-        foregroundColor: Colors.white,
-        actions: [
-          // ఇది సెర్చ్ బటన్ - దీని మీద నొక్కితే సెర్చ్ స్క్రీన్ ఓపెన్ అవుతుంది
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => context.push('/search'),
+    final service = BibleService();
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F2EE),
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: const Color(0xFF3E2723),
+          foregroundColor: Colors.white,
+          title: const Text("పరిశుద్ధ గ్రంథము", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+          actions: [
+            IconButton(icon: const Icon(Icons.search, size: 28), onPressed: () => context.push('/search')),
+          ],
+          bottom: const TabBar(
+            indicatorColor: Color(0xFFD4AF37), // Gold Color
+            indicatorWeight: 4,
+            tabs: [
+              Tab(text: "పాత నిబంధన"),
+              Tab(text: "క్రొత్త నిబంధన"),
+            ],
           ),
-        ],
+        ),
+        body: TabBarView(
+          children: [
+            _buildBookGrid(context, service.getOT()),
+            _buildBookGrid(context, service.getNT()),
+          ],
+        ),
       ),
-      body: ListView.builder(
-        itemCount: books.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Colors.brown[100],
-              child: Text("${index + 1}", style: const TextStyle(color: Colors.brown)),
+    );
+  }
+
+  Widget _buildBookGrid(BuildContext context, List<String> books) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.8,
+      ),
+      itemCount: books.length,
+      itemBuilder: (context, index) {
+        return InkWell(
+          onTap: () => context.push('/bible-reader/${books[index]}'),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
+              border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3), width: 1),
             ),
-            title: Text(books[index], style: const TextStyle(fontSize: 18)),
-            onTap: () => context.push('/bible-reader/${books[index]}'),
-          );
-        },
-      ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 18, backgroundColor: const Color(0xFF3E2723),
+                  child: Text("${index + 1}", style: const TextStyle(color: Colors.white, fontSize: 12)),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Text(books[index], textAlign: TextAlign.center, 
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF3E2723))),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
