@@ -19,13 +19,17 @@ class BibleReader extends StatefulWidget {
 class _BibleReaderState extends State<BibleReader> {
   final BibleService _service = BibleService();
   final ItemScrollController _scrollController = ItemScrollController();
+  
   Map<String, dynamic> _chapters = {};
   String _currentChapter = "1";
-  String _currentVerse = "1";
+  String _currentVerse = "1"; // ఇది డ్రాప్‌డౌన్ జంప్ కోసం
   bool _loading = true;
 
   List<String> _bookmarks = [];
   Map<String, int> _verseColors = {};
+  
+  // మల్టీ సెలెక్షన్ కోసం సెట్ (Keys: verse number)
+  Set<String> _selectedVerses = {};
 
   @override
   void initState() {
@@ -65,6 +69,40 @@ class _BibleReaderState extends State<BibleReader> {
     await prefs.setString('verse_colors', json.encode(_verseColors));
   }
 
+  // సెలెక్షన్ టోగుల్ చేయడం
+  void _toggleSelection(String vNum) {
+    setState(() {
+      if (_selectedVerses.contains(vNum)) {
+        _selectedVerses.remove(vNum);
+      } else {
+        _selectedVerses.add(vNum);
+      }
+    });
+  }
+
+  // సెలెక్ట్ చేసిన వచనాల టెక్స్ట్ కలపడం
+  String _getSelectedText() {
+    var sortedSelected = _selectedVerses.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+    String result = "${widget.bookName} $_currentChapter:${sortedSelected.join(', ')}\n\n";
+    for (var v in sortedSelected) {
+      result += "$v. ${_chapters[_currentChapter][v]}\n";
+    }
+    return result;
+  }
+
+  // మల్టీ కలర్ మార్కింగ్
+  void _applyColorToSelected(Color color) {
+    setState(() {
+      for (var v in _selectedVerses) {
+        String key = "${widget.bookName}_${_currentChapter}_$v";
+        _verseColors[key] = color.value;
+      }
+      _selectedVerses.clear();
+    });
+    _saveColors();
+  }
+
+  // సింగిల్ వచనం ఆప్షన్స్ (Long Press)
   void _showVerseOptions(String vNum, String vText) {
     String key = "${widget.bookName}_${_currentChapter}_$vNum";
     bool isBookmarked = _bookmarks.contains(key);
@@ -90,50 +128,16 @@ class _BibleReaderState extends State<BibleReader> {
             ),
             ListTile(
               leading: const Icon(Icons.copy, color: Colors.blue),
-              title: const Text("Copy Verse"),
+              title: const Text("Copy Single Verse"),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: "${widget.bookName} $_currentChapter:$vNum - $vText"));
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied!")));
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.share, color: Colors.green),
-              title: const Text("Share Verse"),
-              onTap: () {
-                Share.share("${widget.bookName} $_currentChapter:$vNum\n$vText");
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _colorIcon(key, Colors.yellow[200]!),
-                _colorIcon(key, Colors.green[200]!),
-                _colorIcon(key, Colors.blue[200]!),
-                _colorIcon(key, Colors.pink[200]!),
-                IconButton(icon: const Icon(Icons.format_color_reset), onPressed: () {
-                  setState(() => _verseColors.remove(key));
-                  _saveColors();
-                  Navigator.pop(context);
-                }),
-              ],
-            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _colorIcon(String key, Color color) {
-    return GestureDetector(
-      onTap: () {
-        setState(() => _verseColors[key] = color.value);
-        _saveColors();
-        Navigator.pop(context);
-      },
-      child: CircleAvatar(backgroundColor: color, radius: 15),
     );
   }
 
@@ -159,7 +163,7 @@ class _BibleReaderState extends State<BibleReader> {
             style: const TextStyle(color: Colors.white, fontSize: 13),
             underline: Container(),
             items: sortedChapters.map((c) => DropdownMenuItem(value: c, child: Text("అధ్యా. $c"))).toList(),
-            onChanged: (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; }),
+            onChanged: (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); }),
           ),
           DropdownButton<String>(
             value: _currentVerse,
@@ -186,18 +190,25 @@ class _BibleReaderState extends State<BibleReader> {
             String vText = verses[vNum].toString().trim();
             String key = "${widget.bookName}_${_currentChapter}_$vNum";
             
-            bool isSel = vNum == _currentVerse;
+            bool isHighlighted = vNum == _currentVerse;
+            bool isSelected = _selectedVerses.contains(vNum);
             bool isBookmarked = _bookmarks.contains(key);
             int? colorValue = _verseColors[key];
 
             return GestureDetector(
-              behavior: HitTestBehavior.opaque, // ఇది లాంగ్ ప్రెస్ కచ్చితంగా పనిచేసేలా చేస్తుంది
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _toggleSelection(vNum),
               onLongPress: () => _showVerseOptions(vNum, vText),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                margin: const EdgeInsets.only(bottom: 2),
                 decoration: BoxDecoration(
-                  color: colorValue != null ? Color(colorValue) : (isSel ? Colors.brown.withOpacity(0.1) : Colors.transparent),
+                  // ప్రాధాన్యత: 1. సెలెక్షన్ (Blue), 2. కలర్ మార్కింగ్, 3. డ్రాప్‌డౌన్ జంప్ హైలైట్
+                  color: isSelected 
+                      ? Colors.blue.withOpacity(0.2) 
+                      : (colorValue != null ? Color(colorValue) : (isHighlighted ? Colors.brown.withOpacity(0.1) : Colors.transparent)),
                   borderRadius: BorderRadius.circular(5),
+                  border: isSelected ? Border.all(color: Colors.blue, width: 0.5) : null,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,12 +220,13 @@ class _BibleReaderState extends State<BibleReader> {
                         text: TextSpan(
                           style: const TextStyle(color: Colors.black87, fontSize: 21, height: 1.6),
                           children: [
-                            TextSpan(text: "$vNum. ", style: TextStyle(fontWeight: FontWeight.bold, color: isSel ? Colors.red : Colors.brown)),
+                            TextSpan(text: "$vNum. ", style: TextStyle(fontWeight: FontWeight.bold, color: isHighlighted ? Colors.red : Colors.brown)),
                             TextSpan(text: vText),
                           ],
                         ),
                       ),
                     ),
+                    if (isSelected) const Icon(Icons.check_circle, size: 18, color: Colors.blue),
                   ],
                 ),
               ),
@@ -222,6 +234,39 @@ class _BibleReaderState extends State<BibleReader> {
           },
         ),
       ),
+      // మల్టీ సెలెక్షన్ చేసినప్పుడు కింద వచ్చే టూల్ బార్
+      bottomNavigationBar: _selectedVerses.isEmpty 
+          ? null 
+          : BottomAppBar(
+              height: 70,
+              color: Colors.brown[50],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  IconButton(icon: const Icon(Icons.copy), onPressed: () {
+                    Clipboard.setData(ClipboardData(text: _getSelectedText()));
+                    setState(() => _selectedVerses.clear());
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Selected verses copied!")));
+                  }),
+                  IconButton(icon: const Icon(Icons.share), onPressed: () {
+                    Share.share(_getSelectedText());
+                    setState(() => _selectedVerses.clear());
+                  }),
+                  // కలర్ పాలెట్
+                  _colorOption(Colors.yellow[200]!),
+                  _colorOption(Colors.green[200]!),
+                  _colorOption(Colors.blue[200]!),
+                  IconButton(icon: const Icon(Icons.clear), onPressed: () => setState(() => _selectedVerses.clear())),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _colorOption(Color color) {
+    return GestureDetector(
+      onTap: () => _applyColorToSelected(color),
+      child: CircleAvatar(backgroundColor: color, radius: 12),
     );
   }
 }
