@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'bible_service.dart';
 
 class BibleReader extends StatefulWidget {
-  final int bookId; // 1 to 66
-  const BibleReader({super.key, required this.bookId});
+  final String bookName; // ఇప్పుడు ఇది String (పుస్తకం పేరు)
+  const BibleReader({super.key, required this.bookName});
 
   @override
   State<BibleReader> createState() => _BibleReaderState();
@@ -11,74 +11,68 @@ class BibleReader extends StatefulWidget {
 
 class _BibleReaderState extends State<BibleReader> {
   final BibleService _service = BibleService();
-  String _bookName = "";
   Map<String, dynamic> _chapters = {};
-  String _selectedChapter = "1";
-  bool _isLoading = true;
+  String _currentChapter = "1";
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _load();
   }
 
-  _loadData() async {
-    final data = await _service.loadBookData(widget.bookId);
-    setState(() {
-      _bookName = data["name"];
-      _chapters = data["chapters"];
-      _isLoading = false;
-    });
+  _load() async {
+    try {
+      final data = await _service.loadBook(widget.bookName);
+      setState(() {
+        _chapters = data["chapters"];
+        _loading = false;
+      });
+    } catch (e) {
+      // ఫైల్ లోడ్ అవ్వకపోతే ఎర్రర్ చూపిస్తుంది
+      debugPrint("Error loading bible: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
-    // ప్రస్తుత అధ్యాయంలోని వచనాలు
-    Map<String, dynamic> verses = _chapters[_selectedChapter] ?? {};
-    List<String> verseKeys = verses.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+    Map<String, dynamic> verses = _chapters[_currentChapter] ?? {};
+    // వచనాలను నంబర్ల ప్రకారం ఆర్డర్ లో పెట్టడం
+    var verseKeys = verses.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("$_bookName $_selectedChapter"),
+        title: Text("${widget.bookName} $_currentChapter"),
         backgroundColor: Colors.brown[800],
         foregroundColor: Colors.white,
         actions: [
-          // అధ్యాయం మార్చుకోవడానికి Dropdown
+          // అధ్యాయాలు మార్చుకోవడానికి Dropdown
           DropdownButton<String>(
-            value: _selectedChapter,
+            value: _currentChapter,
             dropdownColor: Colors.brown[700],
             style: const TextStyle(color: Colors.white),
-            items: _chapters.keys.map((String key) {
-              return DropdownMenuItem<String>(value: key, child: Text("అధ్యాయం $key"));
-            }).toList(),
-            onChanged: (val) {
-              if (val != null) setState(() => _selectedChapter = val);
-            },
-          ),
+            items: _chapters.keys.map((c) => DropdownMenuItem(value: c, child: Text("అధ్యాయం $c"))).toList(),
+            onChanged: (v) => setState(() => _currentChapter = v!),
+          )
         ],
       ),
       body: Container(
-        color: const Color(0xFFF5F5DC), // కంటికి హాయిగా ఉండే పేపర్ కలర్
+        color: const Color(0xFFFFF9F0),
         child: ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: verseKeys.length,
           itemBuilder: (context, index) {
             String vNum = verseKeys[index];
-            String vText = verses[vNum].toString().trim(); // \n తీసేయడానికి trim()
-
             return Padding(
-              padding: const EdgeInsets.only(bottom: 15.0),
+              padding: const EdgeInsets.only(bottom: 12),
               child: RichText(
                 text: TextSpan(
                   style: const TextStyle(color: Colors.black87, fontSize: 19, height: 1.5),
                   children: [
-                    TextSpan(
-                      text: "$vNum. ",
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.brown, fontSize: 16),
-                    ),
-                    TextSpan(text: vText),
+                    TextSpan(text: "$vNum. ", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.brown)),
+                    TextSpan(text: verses[vNum].toString().trim()),
                   ],
                 ),
               ),
