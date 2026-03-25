@@ -9,7 +9,19 @@ class BibleService {
     return {"name": keyInJson, "chapters": data[keyInJson]};
   }
 
-  // Cross Reference కోసం English to Telugu mapping
+  // రిఫరెన్స్ నుండి తెలుగు వచనాన్ని తీయడానికి చిన్న ఫంక్షన్
+  Future<String> getTeluguVerseText(String telBook, String chap, String verse) async {
+    try {
+      final String response = await rootBundle.loadString('assets/bible_json/$telBook.json');
+      final Map<String, dynamic> data = json.decode(response);
+      String key = data.keys.first;
+      return data[key][chap][verse].toString().trim();
+    } catch (e) {
+      return "";
+    }
+  }
+
+  // English API Names to your Telugu JSON Filenames
   final Map<String, String> engToTel = {
     "Genesis": "ఆదికాండము", "Exodus": "నిర్గమకాండము", "Leviticus": "లేవీయకాండము",
     "Numbers": "సంఖ్యాకాండము", "Deuteronomy": "ద్వితీయోపదేశకాండము", "Joshua": "యెహోషువ",
@@ -23,19 +35,18 @@ class BibleService {
     "Obadiah": "ఓబద్యా", "Jonah": "యోనా", "Micah": "మీకా", "Nahum": "నహూము",
     "Habakkuk": "హబక్కూకు", "Zephaniah": "జెఫన్యా", "Haggai": "హగ్గయి", "Zechariah": "జకర్యా",
     "Malachi": "మలాకీ", "Matthew": "మత్తయి", "Mark": "మార్కు", "Luke": "లూకా",
-    "John": "యోహాను", "Acts": "అపొస్తలుల కార్యములు", "Romans": "రోమీయులకు",
-    "1 Corinthians": "1కొరింథీయులకు", "2 Corinthians": "2కొరింథీయులకు", "Galatians": "గలతీయులకు",
+    "John": "యోహాను", "Acts": "అపో.కార్యములు", "Romans": "రోమీయులకు",
+    "1 Corinthians": "1కోరింథీయులకు", "2 Corinthians": "2కోరింథీయులకు", "Galatians": "గలతీయులకు",
     "Ephesians": "ఎఫెసీయులకు", "Philippians": "フィリピ", "Colossians": "కొలొస్సయులకు",
     "1 Thessalonians": "1థెస్సలొనీకయులకు", "2 Thessalonians": "2థెస్సలొనీకయులకు",
     "1 Timothy": "1తిమోతికి", "2 Timothy": "2తిమోతికి", "Titus": "తీతుకు",
     "Philemon": "ఫిలేమోనుకు", "Hebrews": "హెబ్రీయులకు", "James": "యాకోబు",
     "1 Peter": "1పేతురు", "2 Peter": "2పేతురు", "1 John": "1యోహాను", "2 John": "2యోహాను",
-    "3 John": "3యోహాను", "Jude": "యూదా", "Revelation": "ప్రకటన గ్రంథము"
+    "3 John": "3యోహాను", "Jude": "యూదా", "Revelation": "ప్రకటన గ్రంథం"
   };
 
-  // తెలుగు పేరును బట్టి ఇంగ్లీష్ పేరు ఇచ్చే రివర్స్ మ్యాపింగ్
   String getEngName(String telName) {
-    return engToTel.entries.firstWhere((e) => e.value == telName).key;
+    return engToTel.entries.firstWhere((e) => e.value == telName, orElse: () => engToTel.entries.first).key;
   }
 
   final List<String> bookNames = [
@@ -47,10 +58,10 @@ class BibleService {
     "యెహెజ్కేలు", "దానియేలు", "హోషేయ", "యోవేలు", "ఆమోసు",
     "ఓబద్యా", "యోనా", "మీకా", "నహూము", "హబక్కూకు",
     "జెఫన్యా", "హగ్గయి", "జకర్యా", "మలాకీ", "మత్తయి",
-    "మార్కు", "లూకా", "యోహాను", "అపొస్తలుల కార్యములు", "రోమీయులకు",
-    "1కొరింథీయులకు", "2కొరింథీయులకు", "గలతీయులకు", "ఎఫెసీయులకు", "ఫిలిప్పీయులకు",
+    "మార్కు", "లూకా", "యోహాను", "అపో.కార్యములు", "రోమీయులకు",
+    "1కోరింథీయులకు", "2కోరింథీయులకు", "గలతీయులకు", "ఎఫెసీయులకు", "ఫిలిప్పీయులకు",
     "కొలొస్సయులకు", "1థెస్సలొనీకయులకు", "2థెస్సలొనీకయులకు", "1తిమోతికి", "2తిమోతికి",
     "తీతుకు", "ఫిలేమోనుకు", "హెబ్రీయులకు", "యాకోబు", "1పేతురు",
-    "2పేతురు", "1యోహాను", "2యోహాను", "3యోహాను", "యూదా", "ప్రకటన గ్రంథము"
+    "2పేతురు", "1యోహాను", "2యోహాను", "3యోహాను", "యూదా", "ప్రకటన గ్రంథం"
   ];
 }
