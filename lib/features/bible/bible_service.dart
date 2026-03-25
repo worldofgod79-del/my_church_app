@@ -2,18 +2,42 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class BibleService {
-  // పుస్తకం పేరును బట్టి JSON ఫైల్ ని లోడ్ చేస్తుంది
   Future<Map<String, dynamic>> loadBook(String bookName) async {
-    // ఉదాహరణకు: assets/bible_json/ఆదికాండము.json
     final String response = await rootBundle.loadString('assets/bible_json/$bookName.json');
     final Map<String, dynamic> data = json.decode(response);
-    
-    // JSON లోపల ఉన్న మొదటి కీ ని తీసుకుంటుంది
     String keyInJson = data.keys.first;
     return {"name": keyInJson, "chapters": data[keyInJson]};
   }
 
-  // నీ ఫోల్డర్ లో ఉన్న ఫైల్ పేర్లు ఇక్కడ ఖచ్చితంగా ఉండాలి
+  // Cross Reference కోసం English to Telugu mapping
+  final Map<String, String> engToTel = {
+    "Genesis": "ఆదికాండము", "Exodus": "నిర్గమకాండము", "Leviticus": "లేవీయకాండము",
+    "Numbers": "సంఖ్యాకాండము", "Deuteronomy": "ద్వితీయోపదేశకాండము", "Joshua": "యెహోషువ",
+    "Judges": "న్యాయాధిపతులు", "Ruth": "రూతు", "1 Samuel": "1సమూయేలు", "2 Samuel": "2సమూయేలు",
+    "1 Kings": "1రాజులు", "2 Kings": "2రాజులు", "1 Chronicles": "1దినవృత్తాంతములు",
+    "2 Chronicles": "2దినవృత్తాంతములు", "Ezra": "ఎజ్రా", "Nehemiah": "నెహెమ్యా",
+    "Esther": "ఎస్తేరు", "Job": "యోబు", "Psalms": "కీర్తనలు", "Proverbs": "సామెతలు",
+    "Ecclesiastes": "ప్రసంగి", "Song of Solomon": "పరమగీతము", "Isaiah": "యెషయా",
+    "Jeremiah": "యిర్మీయా", "Lamentations": "విలాపవాక్యములు", "Ezekiel": "యెహెజ్కేలు",
+    "Daniel": "దానియేలు", "Hosea": "హోషేయ", "Joel": "యోవేలు", "Amos": "ఆమోసు",
+    "Obadiah": "ఓబద్యా", "Jonah": "యోనా", "Micah": "మీకా", "Nahum": "నహూము",
+    "Habakkuk": "హబక్కూకు", "Zephaniah": "జెఫన్యా", "Haggai": "హగ్గయి", "Zechariah": "జకర్యా",
+    "Malachi": "మలాకీ", "Matthew": "మత్తయి", "Mark": "మార్కు", "Luke": "లూకా",
+    "John": "యోహాను", "Acts": "అపొస్తలుల కార్యములు", "Romans": "రోమీయులకు",
+    "1 Corinthians": "1కొరింథీయులకు", "2 Corinthians": "2కొరింథీయులకు", "Galatians": "గలతీయులకు",
+    "Ephesians": "ఎఫెసీయులకు", "Philippians": "フィリピ", "Colossians": "కొలొస్సయులకు",
+    "1 Thessalonians": "1థెస్సలొనీకయులకు", "2 Thessalonians": "2థెస్సలొనీకయులకు",
+    "1 Timothy": "1తిమోతికి", "2 Timothy": "2తిమోతికి", "Titus": "తీతుకు",
+    "Philemon": "ఫిలేమోనుకు", "Hebrews": "హెబ్రీయులకు", "James": "యాకోబు",
+    "1 Peter": "1పేతురు", "2 Peter": "2పేతురు", "1 John": "1యోహాను", "2 John": "2యోహాను",
+    "3 John": "3యోహాను", "Jude": "యూదా", "Revelation": "ప్రకటన గ్రంథము"
+  };
+
+  // తెలుగు పేరును బట్టి ఇంగ్లీష్ పేరు ఇచ్చే రివర్స్ మ్యాపింగ్
+  String getEngName(String telName) {
+    return engToTel.entries.firstWhere((e) => e.value == telName).key;
+  }
+
   final List<String> bookNames = [
     "ఆదికాండము", "నిర్గమకాండము", "లేవీయకాండము", "సంఖ్యాకాండము", "ద్వితీయోపదేశకాండము",
     "యెహోషువ", "న్యాయాధిపతులు", "రూతు", "1సమూయేలు", "2సమూయేలు",
