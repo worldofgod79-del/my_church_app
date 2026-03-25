@@ -11,10 +11,10 @@ final GoRouter router = GoRouter(
     GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(path: '/bible', builder: (context, state) => const BibleHome()),
     GoRoute(
-      path: '/bible-reader/:id',
+      path: '/bible-reader/:name', // ఇక్కడ name అని మార్చాం
       builder: (context, state) {
-        final id = int.parse(state.pathParameters['id']!);
-        return BibleReader(bookId: id);
+        final name = state.pathParameters['name']!;
+        return BibleReader(bookName: name);
       },
     ),
   ],
