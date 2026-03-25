@@ -3,36 +3,34 @@ on: [push]
 permissions:
   contents: write
 jobs:
-  build:
+  # వెబ్ బిల్డ్ వేగంగా అయిపోతుంది (సుమారు 2 నిమిషాల్లో)
+  build_web:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          
-      - name: Create Platform Folders
-        run: |
-          flutter create . --platforms web,android
-          flutter pub get
-
-      # కొత్త వెర్షన్లలో ఈ సింపుల్ కమాండ్ చాలు, ఎర్రర్ రాదు
-      - name: Build Web
-        run: |
-          flutter build web --release --base-href "/${{ github.event.repository.name }}/"
-
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+          cache: true # ఫ్లట్టర్ ని సేవ్ చేస్తుంది
+      - run: flutter pub get
+      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+      - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
+
+  # APK బిల్డ్ విడిగా రన్ అవుతుంది
+  build_apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
