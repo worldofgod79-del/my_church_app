@@ -19,7 +19,6 @@ class BibleReader extends StatefulWidget {
 class _BibleReaderState extends State<BibleReader> {
   final BibleService _service = BibleService();
   final ItemScrollController _scrollController = ItemScrollController();
-  
   Map<String, dynamic> _chapters = {};
   String _currentChapter = "1";
   String _currentVerse = "1";
@@ -29,7 +28,6 @@ class _BibleReaderState extends State<BibleReader> {
   Map<String, int> _verseColors = {};
   Set<String> _selectedVerses = {};
 
-  // Premium Colors
   final Color primaryBrown = const Color(0xFF3E2723);
   final Color goldAccent = const Color(0xFFD4AF37);
   final Color paperColor = const Color(0xFFFDFBF7);
@@ -43,18 +41,15 @@ class _BibleReaderState extends State<BibleReader> {
   _load() async {
     final data = await _service.loadBook(widget.bookName);
     final prefs = await SharedPreferences.getInstance();
-    
     setState(() {
       _chapters = data["chapters"];
       if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
       if (widget.initialVerse != null) _currentVerse = widget.initialVerse!;
       _loading = false;
-      
       _bookmarks = prefs.getStringList('bookmarks') ?? [];
       String colorData = prefs.getString('verse_colors') ?? "{}";
       _verseColors = Map<String, int>.from(json.decode(colorData));
     });
-
     Future.delayed(const Duration(milliseconds: 600), () {
       if (widget.initialVerse != null && _scrollController.isAttached) {
         _scrollController.jumpTo(index: int.parse(widget.initialVerse!) - 1);
@@ -82,7 +77,6 @@ class _BibleReaderState extends State<BibleReader> {
   void _showVerseOptions(String vNum, String vText) {
     String key = "${widget.bookName}_${_currentChapter}_$vNum";
     bool isBookmarked = _bookmarks.contains(key);
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -104,10 +98,6 @@ class _BibleReaderState extends State<BibleReader> {
               Clipboard.setData(ClipboardData(text: "${widget.bookName} $_currentChapter:$vNum - $vText"));
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied!")));
-            }),
-            _actionTile(Icons.share, "Share Verse", () {
-              Share.share("${widget.bookName} $_currentChapter:$vNum\n$vText");
-              Navigator.pop(context);
             }),
           ],
         ),
@@ -174,9 +164,7 @@ class _BibleReaderState extends State<BibleReader> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("$vNum. ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isHighlighted ? Colors.red[800] : const Color(0xFF8D6E63))),
-                  Expanded(
-                    child: Text(vText, style: const TextStyle(fontSize: 22, height: 1.7, color: Color(0xFF2C1E1A))),
-                  ),
+                  Expanded(child: Text(vText, style: const TextStyle(fontSize: 22, height: 1.7, color: Color(0xFF2C1E1A)))),
                   if (isBookmarked) Icon(Icons.bookmark, size: 18, color: goldAccent),
                 ],
               ),
@@ -218,4 +206,27 @@ class _BibleReaderState extends State<BibleReader> {
           IconButton(icon: const Icon(Icons.copy, color: Colors.white), onPressed: () {
             Clipboard.setData(ClipboardData(text: _getSelectedText()));
             setState(() => _selectedVerses.clear());
-            ScaffoldMesseng
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied!")));
+          }),
+          IconButton(icon: const Icon(Icons.share, color: Colors.white), onPressed: () {
+            Share.share(_getSelectedText());
+            setState(() => _selectedVerses.clear());
+          }),
+          _colorDot(Colors.yellow[200]!), _colorDot(Colors.green[200]!), _colorDot(Colors.blue[200]!),
+          const VerticalDivider(color: Colors.white24, width: 20),
+          IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => setState(() => _selectedVerses.clear())),
+        ],
+      ),
+    );
+  }
+
+  Widget _colorDot(Color color) {
+    return GestureDetector(
+      onTap: () {
+        for (var v in _selectedVerses) _verseColors["${widget.bookName}_${_currentChapter}_$v"] = color.value;
+        _saveColors(); setState(() => _selectedVerses.clear());
+      },
+      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 6), child: CircleAvatar(backgroundColor: color, radius: 12)),
+    );
+  }
+}
