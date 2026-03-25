@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'bible_service.dart';
 
 class BibleReader extends StatefulWidget {
@@ -16,7 +18,6 @@ class _BibleReaderState extends State<BibleReader> {
   
   Map<String, dynamic> _chapters = {};
   String _currentChapter = "1";
-  String _currentVerse = "1";
   bool _loading = true;
 
   @override
@@ -37,7 +38,48 @@ class _BibleReaderState extends State<BibleReader> {
     }
   }
 
-  // నంబర్లను ఆర్డర్ లో పెట్టే ఫంక్షన్
+  // Cross References తెచ్చే ఫంక్షన్
+  void _showReferences(String vNum) async {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      String engBook = _service.getEngName(widget.bookName);
+      // Open Bible API వాడి రిఫరెన్సులు తెస్తున్నాం
+      final url = "https://labs.bible.org/api/?passage=$engBook%20$_currentChapter:$vNum&type=json";
+      final response = await http.get(Uri.parse(url));
+      
+      Navigator.pop(context); // Loading తీసేయడం
+
+      if (response.statusCode == 200) {
+        // ఇక్కడ రిఫరెన్స్ అడ్రెస్ లతో పాపప్ చూపిస్తాం
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) => Container(
+            padding: const EdgeInsets.all(20),
+            height: 400,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("${widget.bookName} $_currentChapter:$vNum - సంబంధిత వచనాలు", 
+                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const Divider(),
+                const Expanded(
+                  child: Center(child: Text("ఈ వచనానికి సంబంధించిన మరిన్ని వివరాలు ఇక్కడ వస్తాయి.\n(గమనిక: ఈ API ప్రస్తుతం ఇంగ్లీష్ రిఫరెన్సులను ఇస్తుంది)")),
+                )
+              ],
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+    }
+  }
+
   List<String> _getSortedKeys(Iterable<String> keys) {
     return keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
   }
@@ -46,10 +88,7 @@ class _BibleReaderState extends State<BibleReader> {
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
-    // చాప్టర్లను నంబర్ల క్రమంలో సర్దుబాటు చేయడం
     List<String> sortedChapters = _getSortedKeys(_chapters.keys);
-    
-    // ప్రస్తుత చాప్టర్ లోని వచనాలను సర్దుబాటు చేయడం
     Map<String, dynamic> versesMap = _chapters[_currentChapter] ?? {};
     List<String> sortedVerses = _getSortedKeys(versesMap.keys);
 
@@ -57,39 +96,15 @@ class _BibleReaderState extends State<BibleReader> {
       appBar: AppBar(
         backgroundColor: Colors.brown[800],
         foregroundColor: Colors.white,
-        title: Text(widget.bookName, style: const TextStyle(fontSize: 18)),
+        title: Text("${widget.bookName} $_currentChapter"),
         actions: [
-          // చాప్టర్ సెలెక్షన్
           DropdownButton<String>(
             value: _currentChapter,
             dropdownColor: Colors.brown[900],
             style: const TextStyle(color: Colors.white),
             underline: Container(),
             items: sortedChapters.map((c) => DropdownMenuItem(value: c, child: Text("అధ్యాయం $c"))).toList(),
-            onChanged: (v) {
-              setState(() {
-                _currentChapter = v!;
-                _currentVerse = "1"; // చాప్టర్ మారితే వచనం 1 కి వెళ్లాలి
-              });
-            },
-          ),
-          const SizedBox(width: 10),
-          // వచన సెలెక్షన్
-          DropdownButton<String>(
-            value: _currentVerse,
-            dropdownColor: Colors.brown[900],
-            style: const TextStyle(color: Colors.white),
-            underline: Container(),
-            items: sortedVerses.map((v) => DropdownMenuItem(value: v, child: Text("వచనం $v"))).toList(),
-            onChanged: (v) {
-              setState(() => _currentVerse = v!);
-              // సెలెక్ట్ చేసిన వచనం దగ్గరికి స్క్రోల్ చేయడం
-              _itemScrollController.scrollTo(
-                index: int.parse(v!) - 1,
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.easeInOutCubic,
-              );
-            },
+            onChanged: (v) => setState(() => _currentChapter = v!),
           ),
         ],
       ),
@@ -101,28 +116,18 @@ class _BibleReaderState extends State<BibleReader> {
           padding: const EdgeInsets.all(16),
           itemBuilder: (context, index) {
             String vNum = sortedVerses[index];
-            bool isSelected = vNum == _currentVerse;
-
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                // సెలెక్ట్ చేసిన వచనం హైలైట్ అవ్వడానికి
-                color: isSelected ? Colors.brown.withOpacity(0.1) : Colors.transparent,
-              ),
-              child: RichText(
-                text: TextSpan(
-                  style: const TextStyle(color: Colors.black87, fontSize: 20, height: 1.6),
-                  children: [
-                    TextSpan(
-                      text: "$vNum. ",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold, 
-                        color: isSelected ? Colors.red : Colors.brown,
-                        fontSize: 18
-                      ),
-                    ),
-                    TextSpan(text: versesMap[vNum].toString().trim()),
-                  ],
+            return GestureDetector(
+              onTap: () => _showReferences(vNum), // వచనం మీద క్లిక్ చేస్తే రిఫరెన్సులు కనిపిస్తాయి
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: RichText(
+                  text: TextSpan(
+                    style: const TextStyle(color: Colors.black87, fontSize: 20, height: 1.6),
+                    children: [
+                      TextSpan(text: "$vNum. ", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.brown)),
+                      TextSpan(text: versesMap[vNum].toString().trim()),
+                    ],
+                  ),
                 ),
               ),
             );
