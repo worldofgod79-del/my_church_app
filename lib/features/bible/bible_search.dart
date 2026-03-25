@@ -13,41 +13,35 @@ class BibleSearch extends StatefulWidget {
 class _BibleSearchState extends State<BibleSearch> {
   final BibleService _service = BibleService();
   final TextEditingController _controller = TextEditingController();
-  List<SearchResult> _allResults = [];
-  List<SearchResult> _filteredResults = [];
-  String _currentScope = "Full Bible";
+  List<SearchResult> _results = [];
+  String _scope = "Full Bible";
   bool _isSearching = false;
 
-  void _performSearch() async {
+  void _doSearch() async {
     if (_controller.text.isEmpty) return;
-    setState(() { _isSearching = true; _allResults = []; });
+    setState(() { _isSearching = true; _results = []; });
 
-    List<String> booksToSearch = [];
-    if (_currentScope == "Full Bible") booksToSearch = _service.bookNames;
-    else if (_currentScope == "Old Testament") booksToSearch = _service.getOTBooks();
-    else if (_currentScope == "New Testament") booksToSearch = _service.getNTBooks();
-    else if (_currentScope == "Specific Book") booksToSearch = [widget.initialBook!];
+    List<String> targetBooks = [];
+    if (_scope == "Full Bible") targetBooks = _service.bookNames;
+    else if (_scope == "Old Testament") targetBooks = _service.getOTBooks();
+    else if (_scope == "New Testament") targetBooks = _service.getNTBooks();
+    else if (_scope == "This Book") targetBooks = [widget.initialBook!];
 
-    List<SearchResult> tempResults = [];
-    for (String bookName in booksToSearch) {
+    List<SearchResult> temp = [];
+    for (var b in targetBooks) {
       try {
-        var data = await _service.loadBook(bookName);
-        Map<String, dynamic> chapters = data['chapters'];
-        chapters.forEach((chapNum, verses) {
-          (verses as Map).forEach((verseNum, text) {
-            if (text.toString().contains(_controller.text)) {
-              tempResults.add(SearchResult(bookName, chapNum, verseNum, text.toString()));
+        var data = await _service.loadBook(b);
+        Map chapters = data['chapters'];
+        chapters.forEach((cNum, verses) {
+          (verses as Map).forEach((vNum, txt) {
+            if (txt.toString().contains(_controller.text)) {
+              temp.add(SearchResult(b, cNum, vNum, txt.toString()));
             }
           });
         });
-      } catch (e) { debugPrint("Error search in $bookName"); }
+      } catch (_) {}
     }
-
-    setState(() {
-      _allResults = tempResults;
-      _filteredResults = tempResults;
-      _isSearching = false;
-    });
+    setState(() { _results = temp; _isSearching = false; });
   }
 
   @override
@@ -56,27 +50,21 @@ class _BibleSearchState extends State<BibleSearch> {
       appBar: AppBar(
         title: TextField(
           controller: _controller,
-          autofocus: true,
           decoration: const InputDecoration(hintText: "వెతకండి...", border: InputBorder.none),
-          onSubmitted: (_) => _performSearch(),
+          onSubmitted: (_) => _doSearch(),
         ),
-        actions: [IconButton(icon: const Icon(Icons.search), onPressed: _performSearch)],
+        actions: [IconButton(icon: const Icon(Icons.search), onPressed: _doSearch)],
       ),
       body: Column(
         children: [
-          // Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: ["Full Bible", "Old Testament", "New Testament", "Specific Book"].map((scope) {
-                if (scope == "Specific Book" && widget.initialBook == null) return Container();
+              children: ["Full Bible", "Old Testament", "New Testament", "This Book"].map((s) {
+                if (s == "This Book" && widget.initialBook == null) return Container();
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  child: ChoiceChip(
-                    label: Text(scope == "Specific Book" ? widget.initialBook! : scope),
-                    selected: _currentScope == scope,
-                    onSelected: (val) { setState(() => _currentScope = scope); _performSearch(); },
-                  ),
+                  padding: const EdgeInsets.all(5),
+                  child: ChoiceChip(label: Text(s), selected: _scope == s, onSelected: (v) => setState(() => _scope = s)),
                 );
               }).toList(),
             ),
@@ -84,16 +72,13 @@ class _BibleSearchState extends State<BibleSearch> {
           if (_isSearching) const LinearProgressIndicator(),
           Expanded(
             child: ListView.builder(
-              itemCount: _filteredResults.length,
-              itemBuilder: (context, index) {
-                final res = _filteredResults[index];
+              itemCount: _results.length,
+              itemBuilder: (context, i) {
+                final r = _results[i];
                 return ListTile(
-                  title: Text("${res.book} ${res.chapter}:${res.verse}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(res.text, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  onTap: () {
-                    // ఆ వచనం దగ్గరికి వెళ్లడానికి
-                    context.push('/bible-reader/${res.book}?chapter=${res.chapter}&verse=${res.verse}');
-                  },
+                  title: Text("${r.book} ${r.chapter}:${r.verse}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(r.text, maxLines: 2),
+                  onTap: () => context.push('/bible-reader/${r.book}?chapter=${r.chapter}&verse=${r.verse}'),
                 );
               },
             ),
