@@ -2,32 +2,39 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class BibleService {
-  // JSON ఫైల్ ని లోడ్ చేసే ఫంక్షన్
   Future<Map<String, dynamic>> loadBook(String bookName) async {
-    try {
-      final String response = await rootBundle.loadString('assets/bible_json/$bookName.json');
-      final Map<String, dynamic> data = json.decode(response);
-      String keyInJson = data.keys.first;
-      return {"name": keyInJson, "chapters": data[keyInJson]};
-    } catch (e) {
-      throw Exception("ఫైల్ దొరకలేదు: $bookName.json. దయచేసి పేరు చెక్ చేయండి.");
-    }
+    final String response = await rootBundle.loadString('assets/bible_json/$bookName.json');
+    final Map<String, dynamic> data = json.decode(response);
+    String keyInJson = data.keys.first;
+    return {"name": keyInJson, "chapters": data[keyInJson]};
   }
 
-  // 66 పుస్తకాల జాబితా - నీ ఫైల్ పేర్లతో ఇవి సరిపోవాలి
   final List<String> bookNames = [
     "ఆదికాండము", "నిర్గమకాండము", "లేవీయకాండము", "సంఖ్యాకాండము", "ద్వితీయోపదేశకాండము",
     "యెహోషువ", "న్యాయాధిపతులు", "రూతు", "1సమూయేలు", "2సమూయేలు",
     "1రాజులు", "2రాజులు", "1దినవృత్తాంతములు", "2దినవృత్తాంతములు", "ఎజ్రా",
     "నెహెమ్యా", "ఎస్తేరు", "యోబు", "కీర్తనలు", "సామెతలు",
-    "ప్రసంగి", "పరమగీతము", "యెషయా", "యిర్మీయా", "విలాపవాక్యములు",
+    "ప్రసంగి", "పరమీగతము", "యెషయా", "యిర్మీయా", "విలాపవాక్యములు",
     "యెహెజ్కేలు", "దానియేలు", "హోషేయ", "యోవేలు", "ఆమోసు",
     "ఓబద్యా", "యోనా", "మీకా", "నహూము", "హబక్కూకు",
     "జెఫన్యా", "హగ్గయి", "జకర్యా", "మలాకీ", "మత్తయి",
     "మార్కు", "లూకా", "యోహాను", "అపో.కార్యములు", "రోమీయులకు",
-    "1కోరింథీయులకు", "2కోరింథీయులకు", "గలతీయులకు", "ఎఫెసీయులకు", "ఫిలిప్పీయులకు",
+    "1కొరింథీయులకు", "2కొరింథీయులకు", "గలతీయులకు", "ఎఫెసీయులకు", "ఫిలిప్పీయులకు",
     "కొలొస్సయులకు", "1థెస్సలొనీకయులకు", "2థెస్సలొనీకయులకు", "1తిమోతికి", "2తిమోతికి",
     "తీతుకు", "ఫిలేమోనుకు", "హెబ్రీయులకు", "యాకోబు", "1పేతురు",
     "2పేతురు", "1యోహాను", "2యోహాను", "3యోహాను", "యూదా", "ప్రకటన గ్రంథం"
   ];
+
+  // Old Testament: 1-39, New Testament: 40-66
+  List<String> getOTBooks() => bookNames.sublist(0, 39);
+  List<String> getNTBooks() => bookNames.sublist(39);
+}
+
+// సెర్చ్ రిజల్ట్ కోసం మోడల్
+class SearchResult {
+  final String book;
+  final String chapter;
+  final String verse;
+  final String text;
+  SearchResult(this.book, this.chapter, this.verse, this.text);
 }
