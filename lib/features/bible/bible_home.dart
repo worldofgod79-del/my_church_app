@@ -13,6 +13,13 @@ class BibleHome extends StatelessWidget {
         title: const Text("పరిశుద్ధ గ్రంథము"),
         backgroundColor: Colors.brown,
         foregroundColor: Colors.white,
+        actions: [
+          // ఇది సెర్చ్ బటన్ - దీని మీద నొక్కితే సెర్చ్ స్క్రీన్ ఓపెన్ అవుతుంది
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push('/search'),
+          ),
+        ],
       ),
       body: ListView.builder(
         itemCount: books.length,
@@ -23,11 +30,7 @@ class BibleHome extends StatelessWidget {
               child: Text("${index + 1}", style: const TextStyle(color: Colors.brown)),
             ),
             title: Text(books[index], style: const TextStyle(fontSize: 18)),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // పుస్తకం పేరును URL లో పంపిస్తున్నాం
-              context.push('/bible-reader/${books[index]}');
-            },
+            onTap: () => context.push('/bible-reader/${books[index]}'),
           );
         },
       ),
