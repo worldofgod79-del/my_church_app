@@ -19,6 +19,7 @@ class BibleReader extends StatefulWidget {
 class _BibleReaderState extends State<BibleReader> {
   final BibleService _service = BibleService();
   final ItemScrollController _scrollController = ItemScrollController();
+  
   Map<String, dynamic> _chapters = {};
   String _currentChapter = "1";
   String _currentVerse = "1";
@@ -27,6 +28,11 @@ class _BibleReaderState extends State<BibleReader> {
   List<String> _bookmarks = [];
   Map<String, int> _verseColors = {};
   Set<String> _selectedVerses = {};
+
+  // Premium Colors
+  final Color primaryBrown = const Color(0xFF3E2723);
+  final Color goldAccent = const Color(0xFFD4AF37);
+  final Color paperColor = const Color(0xFFFDFBF7);
 
   @override
   void initState() {
@@ -37,15 +43,18 @@ class _BibleReaderState extends State<BibleReader> {
   _load() async {
     final data = await _service.loadBook(widget.bookName);
     final prefs = await SharedPreferences.getInstance();
+    
     setState(() {
       _chapters = data["chapters"];
       if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
       if (widget.initialVerse != null) _currentVerse = widget.initialVerse!;
       _loading = false;
+      
       _bookmarks = prefs.getStringList('bookmarks') ?? [];
       String colorData = prefs.getString('verse_colors') ?? "{}";
       _verseColors = Map<String, int>.from(json.decode(colorData));
     });
+
     Future.delayed(const Duration(milliseconds: 600), () {
       if (widget.initialVerse != null && _scrollController.isAttached) {
         _scrollController.jumpTo(index: int.parse(widget.initialVerse!) - 1);
@@ -53,15 +62,8 @@ class _BibleReaderState extends State<BibleReader> {
     });
   }
 
-  _saveBookmarks() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('bookmarks', _bookmarks);
-  }
-
-  _saveColors() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('verse_colors', json.encode(_verseColors));
-  }
+  _saveBookmarks() async => (await SharedPreferences.getInstance()).setStringList('bookmarks', _bookmarks);
+  _saveColors() async => (await SharedPreferences.getInstance()).setString('verse_colors', json.encode(_verseColors));
 
   void _toggleSelection(String vNum) {
     setState(() {
@@ -92,7 +94,7 @@ class _BibleReaderState extends State<BibleReader> {
           children: [
             Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
             const SizedBox(height: 20),
-            Text("${widget.bookName} $_currentChapter:$vNum", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Color(0xFF3E2723))),
+            Text("${widget.bookName} $_currentChapter:$vNum", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: primaryBrown)),
             const Divider(height: 30),
             _actionTile(isBookmarked ? Icons.bookmark : Icons.bookmark_border, isBookmarked ? "Remove Bookmark" : "Add Bookmark", () {
               setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); });
@@ -103,6 +105,10 @@ class _BibleReaderState extends State<BibleReader> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied!")));
             }),
+            _actionTile(Icons.share, "Share Verse", () {
+              Share.share("${widget.bookName} $_currentChapter:$vNum\n$vText");
+              Navigator.pop(context);
+            }),
           ],
         ),
       ),
@@ -110,23 +116,23 @@ class _BibleReaderState extends State<BibleReader> {
   }
 
   Widget _actionTile(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(leading: Icon(icon, color: const Color(0xFFD4AF37)), title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)), onTap: onTap);
+    return ListTile(leading: Icon(icon, color: goldAccent), title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)), onTap: onTap);
   }
 
   List<String> _sort(Iterable<String> k) => k.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))));
+    if (_loading) return Scaffold(body: Center(child: CircularProgressIndicator(color: goldAccent)));
     var sortedChapters = _sort(_chapters.keys);
     var verses = _chapters[_currentChapter] ?? {};
     var sortedVerses = _sort(verses.keys);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFBF7), // Premium Paper Color
+      backgroundColor: paperColor,
       appBar: AppBar(
-        elevation: 2,
-        backgroundColor: const Color(0xFF3E2723),
+        elevation: 4,
+        backgroundColor: primaryBrown,
         foregroundColor: Colors.white,
         title: Text(widget.bookName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         actions: [
@@ -158,10 +164,10 @@ class _BibleReaderState extends State<BibleReader> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-              margin: const EdgeInsets.only(bottom: 4),
+              margin: const EdgeInsets.only(bottom: 6),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.blue.withOpacity(0.15) : (colorValue != null ? Color(colorValue) : (isHighlighted ? Colors.brown.withOpacity(0.08) : Colors.transparent)),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
                 border: isSelected ? Border.all(color: Colors.blue.withOpacity(0.5)) : null,
               ),
               child: Row(
@@ -169,16 +175,15 @@ class _BibleReaderState extends State<BibleReader> {
                 children: [
                   Text("$vNum. ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: isHighlighted ? Colors.red[800] : const Color(0xFF8D6E63))),
                   Expanded(
-                    child: Text(vText, style: const TextStyle(fontSize: 22, height: 1.7, color: Color(0xFF2C1E1A), fontFamily: 'Ramabhadra')),
+                    child: Text(vText, style: const TextStyle(fontSize: 22, height: 1.7, color: Color(0xFF2C1E1A))),
                   ),
-                  if (isBookmarked) const Icon(Icons.bookmark, size: 18, color: Color(0xFFD4AF37)),
+                  if (isBookmarked) Icon(Icons.bookmark, size: 18, color: goldAccent),
                 ],
               ),
             ),
           );
         },
       ),
-      // Floating Multi-Selection Bar
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _selectedVerses.isEmpty ? null : _buildSelectionBar(),
     );
@@ -190,7 +195,7 @@ class _BibleReaderState extends State<BibleReader> {
       padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
       child: DropdownButton<String>(
-        value: val, dropdownColor: const Color(0xFF3E2723), iconEnabledColor: Colors.white,
+        value: val, dropdownColor: primaryBrown, iconEnabledColor: Colors.white,
         style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
         underline: Container(),
         items: items.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
@@ -204,7 +209,7 @@ class _BibleReaderState extends State<BibleReader> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF3E2723), borderRadius: BorderRadius.circular(40),
+        color: primaryBrown, borderRadius: BorderRadius.circular(40),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 20)],
       ),
       child: Row(
@@ -213,23 +218,4 @@ class _BibleReaderState extends State<BibleReader> {
           IconButton(icon: const Icon(Icons.copy, color: Colors.white), onPressed: () {
             Clipboard.setData(ClipboardData(text: _getSelectedText()));
             setState(() => _selectedVerses.clear());
-          }),
-          IconButton(icon: const Icon(Icons.share, color: Colors.white), onPressed: () {
-            Share.share(_getSelectedText());
-            setState(() => _selectedVerses.clear());
-          }),
-          _colorDot(Colors.yellow[200]!), _colorDot(Colors.green[200]!), _colorDot(Colors.blue[200]!),
-          const VerticalDivider(color: Colors.white24, width: 20),
-          IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => setState(() => _selectedVerses.clear())),
-        ],
-      ),
-    );
-  }
-
-  Widget _colorDot(Color color) {
-    return GestureDetector(onTap: () {
-      for (var v in _selectedVerses) _verseColors["${widget.bookName}_${_currentChapter}_$v"] = color.value;
-      _saveColors(); setState(() => _selectedVerses.clear());
-    }, child: Padding(padding: const EdgeInsets.symmetric(horizontal: 6), child: CircleAvatar(backgroundColor: color, radius: 12)));
-  }
-}
+            ScaffoldMesseng
