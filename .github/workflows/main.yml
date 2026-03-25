@@ -7,18 +7,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - run: flutter create . --platforms web,android
-      - run: flutter pub get
-      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
-      - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
+          
+      - name: Create Platform Folders
+        run: |
+          flutter create . --platforms web,android
+          flutter pub get
+
+      # ఇక్కడ మనం --no-wasm యాడ్ చేశాం, దీనివల్ల ఎర్రర్ రాదు
+      - name: Build Web
+        run: flutter build web --release --web-renderer html --no-wasm --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-      - uses: peaceiris/actions-gh-pages@v3
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
