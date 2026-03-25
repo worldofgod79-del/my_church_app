@@ -6,18 +6,23 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 3 సెకన్ల తర్వాత హోమ్ స్క్రీన్ కి వెళ్తుంది
     Future.delayed(const Duration(seconds: 3), () {
       if (context.mounted) context.go('/home');
     });
 
     return const Scaffold(
-      backgroundColor: Colors.blueGrey,
+      backgroundColor: Colors.brown,
       body: Center(
-        child: Text(
-          "CHURCH APP\nSplash Screen",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.bold),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.auto_stories, size: 80, color: Colors.white),
+            SizedBox(height: 20),
+            Text(
+              "Telugu Bible App",
+              style: TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );
