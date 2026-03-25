@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Clipboard కోసం
+import 'package:flutter/services.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:convert';
 import 'bible_service.dart';
 
 class BibleReader extends StatefulWidget {
@@ -23,7 +24,6 @@ class _BibleReaderState extends State<BibleReader> {
   String _currentVerse = "1";
   bool _loading = true;
 
-  // Bookmarks మరియు Colors సేవ్ చేయడానికి
   List<String> _bookmarks = [];
   Map<String, int> _verseColors = {};
 
@@ -43,7 +43,6 @@ class _BibleReaderState extends State<BibleReader> {
       if (widget.initialVerse != null) _currentVerse = widget.initialVerse!;
       _loading = false;
       
-      // సేవ్ చేసిన డేటాని లోడ్ చేయడం
       _bookmarks = prefs.getStringList('bookmarks') ?? [];
       String colorData = prefs.getString('verse_colors') ?? "{}";
       _verseColors = Map<String, int>.from(json.decode(colorData));
@@ -56,7 +55,6 @@ class _BibleReaderState extends State<BibleReader> {
     });
   }
 
-  // డేటాను సేవ్ చేసే ఫంక్షన్లు
   _saveBookmarks() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('bookmarks', _bookmarks);
@@ -67,7 +65,6 @@ class _BibleReaderState extends State<BibleReader> {
     await prefs.setString('verse_colors', json.encode(_verseColors));
   }
 
-  // Long Press మెనూ
   void _showVerseOptions(String vNum, String vText) {
     String key = "${widget.bookName}_${_currentChapter}_$vNum";
     bool isBookmarked = _bookmarks.contains(key);
@@ -77,15 +74,16 @@ class _BibleReaderState extends State<BibleReader> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
-        child: Wrap(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            Text("${widget.bookName} $_currentChapter:$vNum", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const Divider(),
             ListTile(
               leading: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: Colors.brown),
               title: Text(isBookmarked ? "Remove Bookmark" : "Add Bookmark"),
               onTap: () {
-                setState(() {
-                  isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key);
-                });
+                setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); });
                 _saveBookmarks();
                 Navigator.pop(context);
               },
@@ -94,24 +92,20 @@ class _BibleReaderState extends State<BibleReader> {
               leading: const Icon(Icons.copy, color: Colors.blue),
               title: const Text("Copy Verse"),
               onTap: () {
-                Clipboard.setData(ClipboardData(text: "${widget.bookName} ${_currentChapter}:$vNum - $vText"));
+                Clipboard.setData(ClipboardData(text: "${widget.bookName} $_currentChapter:$vNum - $vText"));
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied to clipboard")));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Copied!")));
               },
             ),
             ListTile(
               leading: const Icon(Icons.share, color: Colors.green),
               title: const Text("Share Verse"),
               onTap: () {
-                Share.share("${widget.bookName} ${_currentChapter}:$vNum\n$vText\n\n- Sent via Telugu Bible App");
+                Share.share("${widget.bookName} $_currentChapter:$vNum\n$vText");
                 Navigator.pop(context);
               },
             ),
             const Divider(),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text("Color Marking:", style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -197,9 +191,10 @@ class _BibleReaderState extends State<BibleReader> {
             int? colorValue = _verseColors[key];
 
             return GestureDetector(
+              behavior: HitTestBehavior.opaque, // ఇది లాంగ్ ప్రెస్ కచ్చితంగా పనిచేసేలా చేస్తుంది
               onLongPress: () => _showVerseOptions(vNum, vText),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
                 decoration: BoxDecoration(
                   color: colorValue != null ? Color(colorValue) : (isSel ? Colors.brown.withOpacity(0.1) : Colors.transparent),
                   borderRadius: BorderRadius.circular(5),
@@ -208,11 +203,16 @@ class _BibleReaderState extends State<BibleReader> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (isBookmarked) const Icon(Icons.bookmark, size: 16, color: Colors.brown),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        "$vNum. $vText", 
-                        style: TextStyle(fontSize: 20, height: 1.6, color: isSel ? Colors.red : Colors.black87)
+                      child: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(color: Colors.black87, fontSize: 21, height: 1.6),
+                          children: [
+                            TextSpan(text: "$vNum. ", style: TextStyle(fontWeight: FontWeight.bold, color: isSel ? Colors.red : Colors.brown)),
+                            TextSpan(text: vText),
+                          ],
+                        ),
                       ),
                     ),
                   ],
