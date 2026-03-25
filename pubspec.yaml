@@ -13,7 +13,8 @@ dependencies:
   go_router: ^12.1.1
   path_provider: ^2.1.1
   scrollable_positioned_list: ^0.3.8
-
+  http: ^1.2.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
