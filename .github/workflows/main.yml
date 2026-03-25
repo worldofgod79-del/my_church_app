@@ -3,7 +3,7 @@ on: [push]
 permissions:
   contents: write
 jobs:
-  # వెబ్ బిల్డ్ వేగంగా అయిపోతుంది (సుమారు 2 నిమిషాల్లో)
+  # 1. వెబ్ బిల్డ్ (ఇది కేవలం 2 నిమిషాల్లో అయిపోతుంది - Instant Preview కోసం)
   build_web:
     runs-on: ubuntu-latest
     steps:
@@ -12,14 +12,19 @@ jobs:
         with:
           channel: 'stable'
           cache: true # ఫ్లట్టర్ ని సేవ్ చేస్తుంది
-      - run: flutter pub get
-      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
-      - uses: peaceiris/actions-gh-pages@v3
+      - name: Configure Web
+        run: |
+          flutter create . --platforms web
+          flutter pub get
+      - name: Build Web
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
 
-  # APK బిల్డ్ విడిగా రన్ అవుతుంది
+  # 2. ఆండ్రాయిడ్ APK బిల్డ్ (ఇది బ్యాక్‌గ్రౌండ్‌లో విడిగా జరుగుతుంది)
   build_apk:
     runs-on: ubuntu-latest
     steps:
@@ -28,9 +33,14 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      - run: flutter pub get
-      - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
+      - name: Configure Android
+        run: |
+          flutter create . --platforms android
+          flutter pub get
+      - name: Build APK
+        run: flutter build apk --release
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
