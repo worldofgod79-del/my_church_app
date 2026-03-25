@@ -11,91 +11,58 @@ class BibleHome extends StatelessWidget {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F2EE),
+        backgroundColor: const Color(0xFFF9F7F5), // Ivory Cream
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: const Color(0xFF3E2723),
-          foregroundColor: Colors.white,
-          title: const Text("పరిశుద్ధ గ్రంథము", 
-            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+          backgroundColor: const Color(0xFF1A1A1A), // Deep Charcoal
+          title: const Text("BIBLE", style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.w300, color: Colors.white)),
+          centerTitle: true,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.search, size: 28), 
-              onPressed: () => context.push('/search')
-            ),
+            IconButton(icon: const Icon(Icons.search_rounded, color: Color(0xFFC5A059)), onPressed: () => context.push('/search')),
           ],
           bottom: const TabBar(
-            indicatorColor: Color(0xFFD4AF37), // Gold Color
-            indicatorWeight: 4,
-            labelStyle: TextStyle(fontWeight: FontWeight.bold),
+            indicatorColor: Color(0xFFC5A059),
+            labelColor: Color(0xFFC5A059),
+            unselectedLabelColor: Colors.white60,
+            indicatorSize: TabBarIndicatorSize.label,
             tabs: [
-              Tab(text: "పాత నిబంధన"),
-              Tab(text: "క్రొత్త నిబంధన"),
+              Tab(child: Text("పాత నిబంధన", style: TextStyle(fontSize: 16))),
+              Tab(child: Text("క్రొత్త నిబంధన", style: TextStyle(fontSize: 16))),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            // ఇక్కడ పేర్లు getOTBooks మరియు getNTBooks అని మార్చాను
-            _buildBookGrid(context, service.getOTBooks(), 0),
-            _buildBookGrid(context, service.getNTBooks(), 39),
+            _buildGrid(context, service.getOTBooks(), 0),
+            _buildGrid(context, service.getNTBooks(), 39),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBookGrid(BuildContext context, List<String> books, int offset) {
+  Widget _buildGrid(BuildContext context, List<String> books, int offset) {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3, 
-        crossAxisSpacing: 12, 
-        mainAxisSpacing: 12, 
-        childAspectRatio: 0.8,
+        crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15, childAspectRatio: 2.2,
       ),
       itemCount: books.length,
       itemBuilder: (context, index) {
         return InkWell(
           onTap: () => context.push('/bible-reader/${books[index]}'),
           child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05), 
-                  blurRadius: 10, 
-                  offset: const Offset(0, 5)
-                )
-              ],
-              border: Border.all(
-                color: const Color(0xFFD4AF37).withOpacity(0.3), 
-                width: 1
-              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Row(
               children: [
-                CircleAvatar(
-                  radius: 18, 
-                  backgroundColor: const Color(0xFF3E2723),
-                  child: Text("${offset + index + 1}", 
-                    style: const TextStyle(color: Colors.white, fontSize: 12)),
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Text(
-                    books[index], 
-                    textAlign: TextAlign.center, 
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold, 
-                      fontSize: 13, 
-                      color: Color(0xFF3E2723)
-                    ),
-                  ),
-                ),
+                Text("${offset + index + 1}", style: TextStyle(color: Colors.grey[300], fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 15),
+                Expanded(child: Text(books[index], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2D2D2D)))),
               ],
             ),
           ),
