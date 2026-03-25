@@ -17,10 +17,10 @@ jobs:
           flutter create . --platforms web,android
           flutter pub get
 
-      # ఇక్కడ మనం --no-wasm వాడటం వల్ల వెబ్ బిల్డ్ సక్సెస్ అవుతుంది
+      # కొత్త వెర్షన్లలో ఈ సింపుల్ కమాండ్ చాలు, ఎర్రర్ రాదు
       - name: Build Web
         run: |
-          flutter build web --release --web-renderer html --no-wasm --base-href "/${{ github.event.repository.name }}/"
+          flutter build web --release --base-href "/${{ github.event.repository.name }}/"
 
       - name: Build APK
         run: flutter build apk --release
