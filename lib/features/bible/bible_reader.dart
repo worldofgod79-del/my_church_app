@@ -67,33 +67,58 @@ class _BibleReaderState extends State<BibleReader> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    var chapters = _chapters.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
+    
+    var chaptersList = _chapters.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
     var versesMap = _chapters[_currentChapter] ?? {};
     var versesList = versesMap.keys.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
 
     final Color bgColor = _isDark ? const Color(0xFF000000) : const Color(0xFFFDFDFD);
     final Color txtColor = _isDark ? Colors.white70 : Colors.black87;
+    final Color appBarBg = _isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: _isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        elevation: 0,
+        backgroundColor: appBarBg,
+        elevation: 0.5,
         foregroundColor: _isDark ? Colors.white : Colors.black,
-        title: Text(widget.bookName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        // పుస్తకం పేరు మీద నొక్కితే వెనక్కి వెళ్లడానికి
+        title: GestureDetector(
+          onTap: () => context.pop(),
+          child: Text(widget.bookName, 
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blue)),
+        ),
         actions: [
-          IconButton(icon: const Icon(Icons.remove_circle_outline, size: 22), onPressed: () => setState(() { if(_fontSize > 12) _fontSize -= 2; _save(); })),
-          IconButton(icon: const Icon(Icons.add_circle_outline, size: 22), onPressed: () => setState(() { if(_fontSize < 40) _fontSize += 2; _save(); })),
+          // చాప్టర్ మరియు వచనం సెలెక్టర్లు బయటే ఉంటాయి
+          _dropdown(_currentChapter, chaptersList, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); })),
+          _dropdown(_currentVerse, versesList, (v) { 
+            setState(() => _currentVerse = v!); 
+            _scrollController.scrollTo(index: int.parse(v!) - 1, duration: const Duration(milliseconds: 400)); 
+          }),
+          
+          // సెర్చ్ ఐకాన్
           IconButton(icon: const Icon(Icons.search, size: 22), onPressed: () => context.push('/search?book=${widget.bookName}')),
-          IconButton(icon: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round, size: 22), onPressed: () => setState(() { _isDark = !_isDark; _save(); })),
-          _pickBtn(_currentChapter, chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); })),
-          _pickBtn(_currentVerse, versesList, (v) { setState(() => _currentVerse = v!); _scrollController.scrollTo(index: int.parse(v!) - 1, duration: const Duration(milliseconds: 400)); }),
+          
+          // సెట్టింగ్స్ గేర్ మెనూ (Zoom, Theme ఇందులోకి వెళ్లాయి)
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.settings, size: 22),
+            onSelected: (val) {
+              if (val == 'dark') setState(() { _isDark = !_isDark; _save(); });
+              if (val == 'zoomIn') setState(() { if(_fontSize < 45) _fontSize += 2; _save(); });
+              if (val == 'zoomOut') setState(() { if(_fontSize > 12) _fontSize -= 2; _save(); });
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'dark', child: ListTile(leading: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round), title: const Text("Theme"))),
+              const PopupMenuItem(value: 'zoomIn', child: ListTile(leading: Icon(Icons.add_circle_outline), title: const Text("Zoom In"))),
+              const PopupMenuItem(value: 'zoomOut', child: ListTile(leading: Icon(Icons.remove_circle_outline), title: const Text("Zoom Out"))),
+            ],
+          ),
         ],
       ),
       body: ScrollablePositionedList.builder(
         itemCount: versesList.length,
         itemScrollController: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         itemBuilder: (context, i) {
           String vNum = versesList[i];
           String vText = versesMap[vNum].toString().trim();
@@ -103,6 +128,7 @@ class _BibleReaderState extends State<BibleReader> {
           int? colorVal = _verseColors[key];
 
           return GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => setState(() => isSelected ? _selectedVerses.remove(vNum) : _selectedVerses.add(vNum)),
             onLongPress: () {
               setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); });
@@ -130,15 +156,15 @@ class _BibleReaderState extends State<BibleReader> {
     );
   }
 
-  Widget _pickBtn(String val, List<String> items, Function(String?) onChg) {
+  Widget _dropdown(String val, List<String> items, Function(String?) onChg) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
       child: DropdownButton<String>(
         value: val, underline: Container(), items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: onChg, dropdownColor: _isDark ? Colors.black : Colors.white,
-        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13),
+        style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13),
       ),
     );
   }
