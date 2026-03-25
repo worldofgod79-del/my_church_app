@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -6,48 +7,47 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home Screen")),
-      // ఎడమ వైపు మెనూ
+      appBar: AppBar(title: const Text("Church App")),
       drawer: Drawer(
-        child: ListView(
+        child: Column(
           children: [
-            const DrawerHeader(child: Text("Side Menu", style: TextStyle(fontSize: 20))),
+            const UserAccountsDrawerHeader(
+              accountName: Text("Telugu Bible"),
+              accountEmail: Text("Version 1.0"),
+              currentAccountPicture: CircleAvatar(child: Icon(Icons.person)),
+            ),
             ListTile(leading: const Icon(Icons.login), title: const Text("Login"), onTap: () {}),
             ListTile(leading: const Icon(Icons.contact_mail), title: const Text("Contact"), onTap: () {}),
             ListTile(leading: const Icon(Icons.book), title: const Text("Books"), onTap: () {}),
-            ListTile(leading: const Icon(Icons.question_answer), title: const Text("Q&A"), onTap: () {}),
+            ListTile(leading: const Icon(Icons.help), title: const Text("Q&A"), onTap: () {}),
           ],
         ),
       ),
-      body: Column(
-        children: [
-          const Expanded(child: Center(child: Text("Welcome to Church App"))),
-          // కింద ఉండే Navigation Buttons
-          Container(
-            padding: const EdgeInsets.all(10),
-            color: Colors.grey[200],
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _navButton(context, Icons.menu_book, "Bible"),
-                _navButton(context, Icons.music_note, "Music"),
-                _navButton(context, Icons.library_books, "books"),
-                _navButton(context, Icons.assignment, "Project H"),
-              ],
-            ),
-          )
-        ],
+      body: const Center(child: Text("Welcome to the Home Screen")),
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _bottomBtn(context, Icons.menu_book, "Bible", "/bible"),
+            _bottomBtn(context, Icons.music_note, "Music", ""),
+            _bottomBtn(context, Icons.library_books, "Books", ""),
+            _bottomBtn(context, Icons.star, "Project H", ""),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _navButton(BuildContext context, IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(icon: Icon(icon), onPressed: () {}),
-        Text(label, style: const TextStyle(fontSize: 12)),
-      ],
+  Widget _bottomBtn(BuildContext context, IconData icon, String label, String route) {
+    return InkWell(
+      onTap: () => route.isNotEmpty ? context.push(route) : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.brown),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
+      ),
     );
   }
 }
