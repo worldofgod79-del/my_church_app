@@ -14,66 +14,57 @@ class _BibleHomeState extends State<BibleHome> {
   @override
   Widget build(BuildContext context) {
     final service = BibleService();
-    final bgColor = _isDark ? const Color(0xFF121212) : const Color(0xFFF9F7F5);
-    final cardColor = _isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    final textColor = _isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final themeBg = _isDark ? const Color(0xFF000000) : const Color(0xFFF2F2F7);
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: bgColor,
+        backgroundColor: themeBg,
         appBar: AppBar(
+          backgroundColor: _isDark ? const Color(0xFF1C1C1E) : Colors.white,
           elevation: 0,
-          backgroundColor: _isDark ? Colors.black : const Color(0xFF1A1A1A),
-          title: const Text("BIBLE", style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.w300, color: Colors.white)),
-          centerTitle: true,
+          centerTitle: false,
+          title: Text("BIBLE", style: TextStyle(color: _isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w900, letterSpacing: 2)),
           actions: [
-            IconButton(icon: Icon(_isDark ? Icons.light_mode : Icons.dark_mode, color: const Color(0xFFC5A059)), 
+            IconButton(icon: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round, color: Colors.amber), 
               onPressed: () => setState(() => _isDark = !_isDark)),
-            IconButton(icon: const Icon(Icons.search_rounded, color: Color(0xFFC5A059)), 
-              onPressed: () => context.push('/search')),
+            IconButton(icon: const Icon(Icons.search, color: Colors.blue), onPressed: () => context.push('/search')),
           ],
-          bottom: const TabBar(
-            indicatorColor: Color(0xFFC5A059),
-            labelColor: Color(0xFFC5A059),
-            unselectedLabelColor: Colors.white60,
-            tabs: [Tab(text: "పాత నిబంధన"), Tab(text: "క్రొత్త నిబంధన")],
+          bottom: TabBar(
+            labelColor: Colors.blue,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Colors.blue,
+            indicatorSize: TabBarIndicatorSize.label,
+            tabs: const [Tab(text: "OLD"), Tab(text: "NEW")],
           ),
         ),
         body: TabBarView(
           children: [
-            _buildGrid(context, service.getOTBooks(), 0, cardColor, textColor),
-            _buildGrid(context, service.getNTBooks(), 39, cardColor, textColor),
+            _buildList(context, service.getOTBooks(), 0),
+            _buildList(context, service.getNTBooks(), 39),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildGrid(BuildContext context, List<String> books, int offset, Color cardColor, Color textColor) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15, childAspectRatio: 2.2,
-      ),
+  Widget _buildList(BuildContext context, List<String> books, int offset) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(15),
       itemCount: books.length,
       itemBuilder: (context, index) {
-        return InkWell(
-          onTap: () => context.push('/bible-reader/${books[index]}'),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
-            ),
-            child: Row(
-              children: [
-                Text("${offset + index + 1}", style: TextStyle(color: Colors.grey.withOpacity(0.5), fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(width: 15),
-                Expanded(child: Text(books[index], style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: textColor))),
-              ],
-            ),
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: _isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            leading: Text("${offset + index + 1}", style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 18)),
+            title: Text(books[index], style: TextStyle(color: _isDark ? Colors.white : Colors.black, fontSize: 18, fontWeight: FontWeight.w600)),
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () => context.push('/bible-reader/${books[index]}'),
           ),
         );
       },
