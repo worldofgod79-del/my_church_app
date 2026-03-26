@@ -4,21 +4,33 @@ import '../features/home/home_screen.dart';
 import '../features/bible/bible_home.dart';
 import '../features/bible/bible_reader.dart';
 import '../features/bible/bible_search.dart';
-import '../features/admin/admin_dashboard.dart'; // అడ్మిన్ ప్యానెల్ ఇంపోర్ట్
+import '../features/admin/admin_dashboard.dart';
+import '../features/admin/admin_albums.dart'; // కొత్తగా యాడ్ చేసిన అడ్మిన్ ఆల్బమ్స్ స్క్రీన్
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes:[
-    // పాతవి అన్నీ అలాగే ఉన్నాయి
-    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
-    GoRoute(path: '/bible', builder: (context, state) => const BibleHome()),
-    
+    // 1. Splash & Home
+    GoRoute(
+      path: '/', 
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/home', 
+      builder: (context, state) => const HomeScreen(),
+    ),
+
+    // 2. Bible Section
+    GoRoute(
+      path: '/bible', 
+      builder: (context, state) => const BibleHome(),
+    ),
     GoRoute(
       path: '/search',
-      builder: (context, state) => BibleSearch(initialBook: state.uri.queryParameters['book']),
+      builder: (context, state) => BibleSearch(
+        initialBook: state.uri.queryParameters['book'],
+      ),
     ),
-    
     GoRoute(
       path: '/bible-reader/:name',
       builder: (context, state) {
@@ -30,8 +42,18 @@ final GoRouter router = GoRouter(
       },
     ),
 
-    // అడ్మిన్ రూట్స్ ఇక్కడ (లిస్ట్ లోపల) ఉండాలి
-    GoRoute(path: '/admin-login', builder: (context, state) => const AdminLoginScreen()),
-    GoRoute(path: '/admin-dashboard', builder: (context, state) => const AdminDashboard()),
+    // 3. Admin Section
+    GoRoute(
+      path: '/admin-login', 
+      builder: (context, state) => const AdminLoginScreen(),
+    ),
+    GoRoute(
+      path: '/admin-dashboard', 
+      builder: (context, state) => const AdminDashboard(),
+    ),
+    GoRoute(
+      path: '/admin-albums', 
+      builder: (context, state) => const AdminAlbumsScreen(),
+    ),
   ],
 );
