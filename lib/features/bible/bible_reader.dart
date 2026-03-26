@@ -23,7 +23,7 @@ class _BibleReaderState extends State<BibleReader> {
   Map<String, dynamic> _chapters = {};
   String _currentChapter = "1";
   String _currentVerse = "1";
-  String? _highlightedVerse; // సెర్చ్ నుండి వచ్చిన వచనాన్ని హైలైట్ చేయడానికి
+  String? _highlightedVerse; 
   
   bool _loading = true;
   bool _isDark = true;
@@ -57,7 +57,7 @@ class _BibleReaderState extends State<BibleReader> {
       if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
       if (widget.initialVerse != null) {
         _currentVerse = widget.initialVerse!;
-        _highlightedVerse = widget.initialVerse!; // సెర్చ్ వచనాన్ని ఇక్కడ సెట్ చేస్తున్నాం
+        _highlightedVerse = widget.initialVerse!;
       }
       _loading = false;
     });
@@ -89,17 +89,26 @@ class _BibleReaderState extends State<BibleReader> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: BoxDecoration(color: _isDark ? const Color(0xFF161B22) : Colors.white, borderRadius: const BorderRadius.vertical(top: Radius.circular(30))),
+        decoration: BoxDecoration(
+          color: _isDark ? const Color(0xFF161B22) : Colors.white, 
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30))
+        ),
         padding: const EdgeInsets.all(25),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children:[
-            Text("${widget.bookName} $_currentChapter:$vNum", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _isDark ? Colors.white : Colors.black)),
+            Text("${widget.bookName} $_currentChapter:$vNum", 
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _isDark ? Colors.white : Colors.black)),
             const Divider(height: 30, color: Colors.grey),
             ListTile(
               leading: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: accentCyan),
-              title: Text(isBookmarked ? "Remove Bookmark" : "Save Bookmark", style: TextStyle(color: _isDark ? Colors.white : Colors.black)),
-              onTap: () { setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); }); _save(); Navigator.pop(context); },
+              title: Text(isBookmarked ? "Remove Bookmark" : "Save Bookmark", 
+                style: TextStyle(color: _isDark ? Colors.white : Colors.black)),
+              onTap: () { 
+                setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); }); 
+                _save(); 
+                Navigator.pop(context); 
+              },
             ),
           ],
         ),
@@ -137,9 +146,9 @@ class _BibleReaderState extends State<BibleReader> {
               if (val == 'out') setState(() { if(_fontSize > 12) _fontSize -= 2; _save(); });
             },
             itemBuilder: (context) =>[
-              PopupMenuItem(value: 'dark', child: ListTile(leading: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round, color: accentCyan), title: Text("Theme", style: TextStyle(color: _isDark?Colors.white:Colors.black)))),
-              PopupMenuItem(value: 'in', child: ListTile(leading: Icon(Icons.zoom_in, color: accentCyan), title: Text("Zoom In", style: TextStyle(color: _isDark?Colors.white:Colors.black)))),
-              PopupMenuItem(value: 'out', child: ListTile(leading: Icon(Icons.zoom_out, color: accentCyan), title: Text("Zoom Out", style: TextStyle(color: _isDark?Colors.white:Colors.black)))),
+              PopupMenuItem(value: 'dark', child: ListTile(leading: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round, color: accentCyan), title: Text("Theme", style: TextStyle(color: _isDark ? Colors.white : Colors.black)))),
+              PopupMenuItem(value: 'in', child: ListTile(leading: Icon(Icons.zoom_in, color: accentCyan), title: Text("Zoom In", style: TextStyle(color: _isDark ? Colors.white : Colors.black)))),
+              PopupMenuItem(value: 'out', child: ListTile(leading: Icon(Icons.zoom_out, color: accentCyan), title: Text("Zoom Out", style: TextStyle(color: _isDark ? Colors.white : Colors.black)))),
             ],
           ),
         ],
@@ -171,7 +180,7 @@ class _BibleReaderState extends State<BibleReader> {
               
               bool isSelected = _selectedVerses.contains(vNum);
               bool isBookmarked = _bookmarks.contains(key);
-              bool isHighlighted = vNum == _highlightedVerse; // సెర్చ్ హైలైట్ లాజిక్
+              bool isHighlighted = vNum == _highlightedVerse; 
               int? colorVal = _verseColors[key];
 
               return GestureDetector(
@@ -180,7 +189,7 @@ class _BibleReaderState extends State<BibleReader> {
                   setState(() {
                     if (isSelected) _selectedVerses.remove(vNum);
                     else _selectedVerses.add(vNum);
-                    _highlightedVerse = null; // టాప్ చేయగానే సెర్చ్ హైలైట్ పోతుంది
+                    _highlightedVerse = null; 
                   });
                 },
                 onLongPress: () => _showOptions(vNum, vText),
@@ -189,14 +198,12 @@ class _BibleReaderState extends State<BibleReader> {
                   margin: const EdgeInsets.only(bottom: 20),
                   padding: (isSelected || isHighlighted) ? const EdgeInsets.all(20) : EdgeInsets.zero,
                   decoration: BoxDecoration(
-                    // ఇక్కడ సెర్చ్ హైలైట్ కలర్ యాడ్ చేసాం
                     color: isSelected 
                         ? (_isDark ? const Color(0xFF161B22) : Colors.white) 
                         : (isHighlighted 
-                            ? accentCyan.withOpacity(0.15) // Neon Cyan Glow
+                            ? accentCyan.withOpacity(0.15) 
                             : (colorVal != null ? Color(colorVal).withOpacity(0.2) : Colors.transparent)),
                     borderRadius: BorderRadius.circular(24),
-                    // ఇక్కడ సెర్చ్ హైలైట్ బార్డర్ యాడ్ చేసాం
                     border: isSelected 
                         ? Border.all(color: _isDark ? const Color(0xFF30363D) : const Color(0xFFE5E7EB), width: 1.5) 
                         : (isHighlighted ? Border.all(color: accentCyan.withOpacity(0.5), width: 1.5) : null),
@@ -263,7 +270,7 @@ class _BibleReaderState extends State<BibleReader> {
           _currentChapter = v!; 
           _currentVerse = "1"; 
           _selectedVerses.clear(); 
-          _highlightedVerse = null; // చాప్టర్ మారితే హైలైట్ పోతుంది
+          _highlightedVerse = null; 
         })),
         Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
         _glassDropdown("V $_currentVerse", verses, (v) {
@@ -278,4 +285,46 @@ class _BibleReaderState extends State<BibleReader> {
   Widget _glassDropdown(String title, List<String> items, Function(String?) onChg) {
     return DropdownButtonHideUnderline(
       child: DropdownButton<String>(
-        hint: Text(title, style: TextStyle(color: _isDark ? Co
+        hint: Text(title, style: TextStyle(color: _isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
+        icon: const SizedBox(), 
+        dropdownColor: _isDark ? const Color(0xFF161B22) : Colors.white,
+        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: TextStyle(color: _isDark ? Colors.white : Colors.black)))).toList(),
+        onChanged: onChg,
+      ),
+    );
+  }
+
+  Widget _buildActionPill() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children:[
+        IconButton(icon: Icon(Icons.copy, color: _isDark ? Colors.white : Colors.black), onPressed: () {
+          var sorted = _selectedVerses.toList()..sort((a,b) => int.parse(a).compareTo(int.parse(b)));
+          String res = "${widget.bookName} $_currentChapter\n\n";
+          for(var v in sorted) res += "$v. ${_chapters[_currentChapter][v]}\n";
+          Clipboard.setData(ClipboardData(text: res)); 
+          setState(() => _selectedVerses.clear());
+        }),
+        IconButton(icon: Icon(Icons.share, color: _isDark ? Colors.white : Colors.black), onPressed: () {
+          var sorted = _selectedVerses.toList()..sort((a,b) => int.parse(a).compareTo(int.parse(b)));
+          String res = "${widget.bookName} $_currentChapter\n\n";
+          for(var v in sorted) res += "$v. ${_chapters[_currentChapter][v]}\n";
+          res += "\n- Shared via Luminous Word App"; 
+          Share.share(res); 
+          setState(() => _selectedVerses.clear());
+        }),
+        _dot(const Color(0xFFFDE047)), 
+        _dot(const Color(0xFF6EE7B7)), 
+        _dot(const Color(0xFF93C5FD)), 
+        Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
+        IconButton(icon: Icon(Icons.close, color: accentCyan), onPressed: () => setState(() => _selectedVerses.clear())),
+      ],
+    );
+  }
+
+  Widget _dot(Color c) => GestureDetector(onTap: () {
+    for (var v in _selectedVerses) _verseColors["${widget.bookName}_${_currentChapter}_$v"] = c.value;
+    _save(); 
+    setState(() => _selectedVerses.clear());
+  }, child: CircleAvatar(radius: 10, backgroundColor: c));
+}
