@@ -15,6 +15,7 @@ dependencies:
   http: ^1.2.0
   shared_preferences: ^2.3.0  # Updated
   share_plus: ^10.1.0         # Updated to latest (Fixes Web Error)
+  xml: ^6.5.0
 
 dev_dependencies:
   flutter_test:
@@ -24,4 +25,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/bible_json/
+    - assets/bible.xml
