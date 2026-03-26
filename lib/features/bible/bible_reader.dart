@@ -24,13 +24,14 @@ class _BibleReaderState extends State<BibleReader> {
   String _currentChapter = "1";
   String _currentVerse = "1";
   bool _loading = true;
-  bool _isDark = true; // Default to Dark Premium
+  String _errorMessage = ""; // ఎర్రర్ కోసం కొత్త వేరియబుల్
+  
+  bool _isDark = true;
   double _fontSize = 20.0;
   List<String> _bookmarks =[];
   Map<String, int> _verseColors = {};
   Set<String> _selectedVerses = {};
 
-  // Luminous Theme Colors
   final Color bgDark = const Color(0xFF0D1117);
   final Color bgLight = const Color(0xFFF9FAFB);
   final Color accentCyan = const Color(0xFF00E5FF);
@@ -42,26 +43,34 @@ class _BibleReaderState extends State<BibleReader> {
     _load();
   }
 
+  // ఇక్కడే మనం ఎర్రర్స్ ని పట్టుకునే లాజిక్ రాశాం
   _load() async {
-    final data = await _service.loadBook(widget.bookName);
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _chapters = data["chapters"];
-      _isDark = prefs.getBool('isDark') ?? true;
-      _fontSize = prefs.getDouble('fontSize') ?? 20.0;
-      _bookmarks = prefs.getStringList('bookmarks') ??[];
-      String colorData = prefs.getString('verse_colors') ?? "{}";
-      _verseColors = Map<String, int>.from(json.decode(colorData));
-      if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
-      if (widget.initialVerse != null) _currentVerse = widget.initialVerse!;
-      _loading = false;
-    });
-    if (widget.initialVerse != null) {
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (_scrollController.isAttached) {
-          int vIndex = _getSortedKeys(_chapters[_currentChapter] ?? {}).indexOf(widget.initialVerse!);
-          _scrollController.jumpTo(index: vIndex + 1); // +1 because index 0 is Header
-        }
+    try {
+      final data = await _service.loadBook(widget.bookName);
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _chapters = data["chapters"];
+        _isDark = prefs.getBool('isDark') ?? true;
+        _fontSize = prefs.getDouble('fontSize') ?? 20.0;
+        _bookmarks = prefs.getStringList('bookmarks') ??[];
+        String colorData = prefs.getString('verse_colors') ?? "{}";
+        _verseColors = Map<String, int>.from(json.decode(colorData));
+        if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
+        if (widget.initialVerse != null) _currentVerse = widget.initialVerse!;
+        _loading = false;
+      });
+      if (widget.initialVerse != null) {
+        Future.delayed(const Duration(milliseconds: 600), () {
+          if (_scrollController.isAttached) {
+            int vIndex = _getSortedKeys(_chapters[_currentChapter] ?? {}).indexOf(widget.initialVerse!);
+            _scrollController.jumpTo(index: vIndex + 1);
+          }
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _loading = false;
       });
     }
   }
@@ -103,6 +112,20 @@ class _BibleReaderState extends State<BibleReader> {
 
   @override
   Widget build(BuildContext context) {
+    // ఒకవేళ ఎర్రర్ వస్తే ఈ స్క్రీన్ కనిపిస్తుంది
+    if (_errorMessage.isNotEmpty) {
+      return Scaffold(
+        backgroundColor: bgDark,
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white), onPressed: () => context.pop())),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text("సమస్య: \n$_errorMessage", style: const TextStyle(color: Colors.redAccent, fontSize: 16), textAlign: TextAlign.center),
+          ),
+        ),
+      );
+    }
+
     if (_loading) return Scaffold(backgroundColor: bgDark, body: Center(child: CircularProgressIndicator(color: accentCyan)));
     
     var chapters = _getSortedKeys(_chapters.keys);
@@ -141,11 +164,10 @@ class _BibleReaderState extends State<BibleReader> {
       body: Stack(
         children:[
           ScrollablePositionedList.builder(
-            itemCount: sortedVerses.length + 1, // +1 for the large Header
+            itemCount: sortedVerses.length + 1,
             itemScrollController: _scrollController,
-            padding: const EdgeInsets.only(left: 25, right: 25, bottom: 120), // Bottom padding for the floating bar
+            padding: const EdgeInsets.only(left: 25, right: 25, bottom: 120),
             itemBuilder: (context, i) {
-              // 1. Luminous Style Large Header
               if (i == 0) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 10, bottom: 40),
@@ -160,7 +182,6 @@ class _BibleReaderState extends State<BibleReader> {
                 );
               }
 
-              // 2. Verse Items
               String vNum = sortedVerses[i - 1];
               String vText = versesMap[vNum].toString().trim();
               String key = "${widget.bookName}_${_currentChapter}_$vNum";
@@ -200,7 +221,6 @@ class _BibleReaderState extends State<BibleReader> {
             },
           ),
           
-          // Floating Bottom Navigation / Action Pill
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
@@ -230,22 +250,18 @@ class _BibleReaderState extends State<BibleReader> {
     );
   }
 
-  // The Navigation Pill (Book | Chapter | Verse)
   Widget _buildNavPill(List<String> chapters, List<String> verses) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children:[
-        // Book Name Button (Goes back)
         TextButton(
           onPressed: () => context.pop(),
           style: TextButton.styleFrom(foregroundColor: accentCyan, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
           child: Text(widget.bookName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         ),
         Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
-        // Chapter Dropdown
         _glassDropdown("Ch $_currentChapter", chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); })),
         Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
-        // Verse Dropdown
         _glassDropdown("V $_currentVerse", verses, (v) {
           setState(() => _currentVerse = v!);
           int vIndex = verses.indexOf(v!);
@@ -259,7 +275,7 @@ class _BibleReaderState extends State<BibleReader> {
     return DropdownButtonHideUnderline(
       child: DropdownButton<String>(
         hint: Text(title, style: TextStyle(color: _isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-        icon: const SizedBox(), // Hide default icon for cleaner look
+        icon: const SizedBox(),
         dropdownColor: _isDark ? const Color(0xFF161B22) : Colors.white,
         items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: TextStyle(color: _isDark?Colors.white:Colors.black)))).toList(),
         onChanged: onChg,
@@ -267,7 +283,6 @@ class _BibleReaderState extends State<BibleReader> {
     );
   }
 
-  // The Action Pill (When verses are selected)
   Widget _buildActionPill() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -284,9 +299,9 @@ class _BibleReaderState extends State<BibleReader> {
           for(var v in sorted) res += "$v. ${_chapters[_currentChapter][v]}\n";
           Share.share(res); setState(() => _selectedVerses.clear());
         }),
-        _dot(const Color(0xFFFDE047)), // Soft Yellow
-        _dot(const Color(0xFF6EE7B7)), // Soft Green
-        _dot(const Color(0xFF93C5FD)), // Soft Blue
+        _dot(const Color(0xFFFDE047)),
+        _dot(const Color(0xFF6EE7B7)),
+        _dot(const Color(0xFF93C5FD)),
         Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
         IconButton(icon: Icon(Icons.close, color: accentCyan), onPressed: () => setState(() => _selectedVerses.clear())),
       ],
