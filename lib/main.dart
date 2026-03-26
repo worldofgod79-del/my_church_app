@@ -11,13 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Telugu Church App',
+      title: 'Luminous Word',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
       theme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.brown,
-        colorSchemeSeed: Colors.brown,
+        // యాప్ మొత్తం ఈ ఫాంట్ వస్తుంది
+        fontFamily: 'BalooTammudu2', 
       ),
     );
   }
