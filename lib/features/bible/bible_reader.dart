@@ -23,9 +23,9 @@ class _BibleReaderState extends State<BibleReader> {
   Map<String, dynamic> _chapters = {};
   String _currentChapter = "1";
   String _currentVerse = "1";
-  bool _loading = true;
-  String _errorMessage = ""; // ఎర్రర్ కోసం కొత్త వేరియబుల్
+  String? _highlightedVerse; // సెర్చ్ నుండి వచ్చిన వచనాన్ని హైలైట్ చేయడానికి
   
+  bool _loading = true;
   bool _isDark = true;
   double _fontSize = 20.0;
   List<String> _bookmarks =[];
@@ -43,34 +43,31 @@ class _BibleReaderState extends State<BibleReader> {
     _load();
   }
 
-  // ఇక్కడే మనం ఎర్రర్స్ ని పట్టుకునే లాజిక్ రాశాం
   _load() async {
-    try {
-      final data = await _service.loadBook(widget.bookName);
-      final prefs = await SharedPreferences.getInstance();
-      setState(() {
-        _chapters = data["chapters"];
-        _isDark = prefs.getBool('isDark') ?? true;
-        _fontSize = prefs.getDouble('fontSize') ?? 20.0;
-        _bookmarks = prefs.getStringList('bookmarks') ??[];
-        String colorData = prefs.getString('verse_colors') ?? "{}";
-        _verseColors = Map<String, int>.from(json.decode(colorData));
-        if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
-        if (widget.initialVerse != null) _currentVerse = widget.initialVerse!;
-        _loading = false;
-      });
+    final data = await _service.loadBook(widget.bookName);
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _chapters = data["chapters"];
+      _isDark = prefs.getBool('isDark') ?? true;
+      _fontSize = prefs.getDouble('fontSize') ?? 20.0;
+      _bookmarks = prefs.getStringList('bookmarks') ??[];
+      String colorData = prefs.getString('verse_colors') ?? "{}";
+      _verseColors = Map<String, int>.from(json.decode(colorData));
+      
+      if (widget.initialChapter != null) _currentChapter = widget.initialChapter!;
       if (widget.initialVerse != null) {
-        Future.delayed(const Duration(milliseconds: 600), () {
-          if (_scrollController.isAttached) {
-            int vIndex = _getSortedKeys(_chapters[_currentChapter] ?? {}).indexOf(widget.initialVerse!);
-            _scrollController.jumpTo(index: vIndex + 1);
-          }
-        });
+        _currentVerse = widget.initialVerse!;
+        _highlightedVerse = widget.initialVerse!; // సెర్చ్ వచనాన్ని ఇక్కడ సెట్ చేస్తున్నాం
       }
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _loading = false;
+      _loading = false;
+    });
+    
+    if (widget.initialVerse != null) {
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (_scrollController.isAttached) {
+          int vIndex = _getSortedKeys(_chapters[_currentChapter] ?? {}).indexOf(widget.initialVerse!);
+          _scrollController.jumpTo(index: vIndex + 1); 
+        }
       });
     }
   }
@@ -112,20 +109,6 @@ class _BibleReaderState extends State<BibleReader> {
 
   @override
   Widget build(BuildContext context) {
-    // ఒకవేళ ఎర్రర్ వస్తే ఈ స్క్రీన్ కనిపిస్తుంది
-    if (_errorMessage.isNotEmpty) {
-      return Scaffold(
-        backgroundColor: bgDark,
-        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white), onPressed: () => context.pop())),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Text("సమస్య: \n$_errorMessage", style: const TextStyle(color: Colors.redAccent, fontSize: 16), textAlign: TextAlign.center),
-          ),
-        ),
-      );
-    }
-
     if (_loading) return Scaffold(backgroundColor: bgDark, body: Center(child: CircularProgressIndicator(color: accentCyan)));
     
     var chapters = _getSortedKeys(_chapters.keys);
@@ -164,9 +147,9 @@ class _BibleReaderState extends State<BibleReader> {
       body: Stack(
         children:[
           ScrollablePositionedList.builder(
-            itemCount: sortedVerses.length + 1,
+            itemCount: sortedVerses.length + 1, 
             itemScrollController: _scrollController,
-            padding: const EdgeInsets.only(left: 25, right: 25, bottom: 120),
+            padding: const EdgeInsets.only(left: 25, right: 25, bottom: 120), 
             itemBuilder: (context, i) {
               if (i == 0) {
                 return Padding(
@@ -185,23 +168,39 @@ class _BibleReaderState extends State<BibleReader> {
               String vNum = sortedVerses[i - 1];
               String vText = versesMap[vNum].toString().trim();
               String key = "${widget.bookName}_${_currentChapter}_$vNum";
+              
               bool isSelected = _selectedVerses.contains(vNum);
               bool isBookmarked = _bookmarks.contains(key);
+              bool isHighlighted = vNum == _highlightedVerse; // సెర్చ్ హైలైట్ లాజిక్
               int? colorVal = _verseColors[key];
 
               return GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => setState(() => isSelected ? _selectedVerses.remove(vNum) : _selectedVerses.add(vNum)),
+                onTap: () {
+                  setState(() {
+                    if (isSelected) _selectedVerses.remove(vNum);
+                    else _selectedVerses.add(vNum);
+                    _highlightedVerse = null; // టాప్ చేయగానే సెర్చ్ హైలైట్ పోతుంది
+                  });
+                },
                 onLongPress: () => _showOptions(vNum, vText),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   margin: const EdgeInsets.only(bottom: 20),
-                  padding: isSelected ? const EdgeInsets.all(20) : EdgeInsets.zero,
+                  padding: (isSelected || isHighlighted) ? const EdgeInsets.all(20) : EdgeInsets.zero,
                   decoration: BoxDecoration(
-                    color: isSelected ? (_isDark ? const Color(0xFF161B22) : Colors.white) : (colorVal != null ? Color(colorVal).withOpacity(0.2) : Colors.transparent),
+                    // ఇక్కడ సెర్చ్ హైలైట్ కలర్ యాడ్ చేసాం
+                    color: isSelected 
+                        ? (_isDark ? const Color(0xFF161B22) : Colors.white) 
+                        : (isHighlighted 
+                            ? accentCyan.withOpacity(0.15) // Neon Cyan Glow
+                            : (colorVal != null ? Color(colorVal).withOpacity(0.2) : Colors.transparent)),
                     borderRadius: BorderRadius.circular(24),
-                    border: isSelected ? Border.all(color: _isDark ? const Color(0xFF30363D) : const Color(0xFFE5E7EB), width: 1.5) : null,
-                    boxShadow: isSelected ?[BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)] :[],
+                    // ఇక్కడ సెర్చ్ హైలైట్ బార్డర్ యాడ్ చేసాం
+                    border: isSelected 
+                        ? Border.all(color: _isDark ? const Color(0xFF30363D) : const Color(0xFFE5E7EB), width: 1.5) 
+                        : (isHighlighted ? Border.all(color: accentCyan.withOpacity(0.5), width: 1.5) : null),
+                    boxShadow: (isSelected || isHighlighted) ?[BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)] :[],
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +259,12 @@ class _BibleReaderState extends State<BibleReader> {
           child: Text(widget.bookName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         ),
         Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
-        _glassDropdown("Ch $_currentChapter", chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); })),
+        _glassDropdown("Ch $_currentChapter", chapters, (v) => setState(() { 
+          _currentChapter = v!; 
+          _currentVerse = "1"; 
+          _selectedVerses.clear(); 
+          _highlightedVerse = null; // చాప్టర్ మారితే హైలైట్ పోతుంది
+        })),
         Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
         _glassDropdown("V $_currentVerse", verses, (v) {
           setState(() => _currentVerse = v!);
@@ -274,42 +278,4 @@ class _BibleReaderState extends State<BibleReader> {
   Widget _glassDropdown(String title, List<String> items, Function(String?) onChg) {
     return DropdownButtonHideUnderline(
       child: DropdownButton<String>(
-        hint: Text(title, style: TextStyle(color: _isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 14)),
-        icon: const SizedBox(),
-        dropdownColor: _isDark ? const Color(0xFF161B22) : Colors.white,
-        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: TextStyle(color: _isDark?Colors.white:Colors.black)))).toList(),
-        onChanged: onChg,
-      ),
-    );
-  }
-
-  Widget _buildActionPill() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children:[
-        IconButton(icon: Icon(Icons.copy, color: _isDark ? Colors.white : Colors.black), onPressed: () {
-          var sorted = _selectedVerses.toList()..sort((a,b) => int.parse(a).compareTo(int.parse(b)));
-          String res = "${widget.bookName} $_currentChapter\n";
-          for(var v in sorted) res += "$v. ${_chapters[_currentChapter][v]}\n";
-          Clipboard.setData(ClipboardData(text: res)); setState(() => _selectedVerses.clear());
-        }),
-        IconButton(icon: Icon(Icons.share, color: _isDark ? Colors.white : Colors.black), onPressed: () {
-          var sorted = _selectedVerses.toList()..sort((a,b) => int.parse(a).compareTo(int.parse(b)));
-          String res = "${widget.bookName} $_currentChapter\n";
-          for(var v in sorted) res += "$v. ${_chapters[_currentChapter][v]}\n";
-          Share.share(res); setState(() => _selectedVerses.clear());
-        }),
-        _dot(const Color(0xFFFDE047)),
-        _dot(const Color(0xFF6EE7B7)),
-        _dot(const Color(0xFF93C5FD)),
-        Container(width: 1, height: 20, color: Colors.grey.withOpacity(0.3)),
-        IconButton(icon: Icon(Icons.close, color: accentCyan), onPressed: () => setState(() => _selectedVerses.clear())),
-      ],
-    );
-  }
-
-  Widget _dot(Color c) => GestureDetector(onTap: () {
-    for (var v in _selectedVerses) _verseColors["${widget.bookName}_${_currentChapter}_$v"] = c.value;
-    _save(); setState(() => _selectedVerses.clear());
-  }, child: CircleAvatar(radius: 10, backgroundColor: c));
-}
+        hint: Text(title, style: TextStyle(color: _isDark ? Co
