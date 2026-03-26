@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -10,12 +11,22 @@ class AdminLoginScreen extends StatefulWidget {
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
+  final TextEditingController _token = TextEditingController(); // కొత్తగా టోకెన్ ఫీల్డ్
   
   final String adminEmail = "admin@luminousword.com"; 
 
-  void _login() {
+  void _login() async {
     if (_email.text.trim() == adminEmail && _password.text == "admin123") {
-      context.go('/admin-dashboard');
+      if (_token.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("GitHub Token is required!")));
+        return;
+      }
+      
+      // లాగిన్ సక్సెస్ అయ్యాక, టోకెన్‌ని ఫోన్ మెమరీలో సేవ్ చేస్తున్నాం
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('github_token', _token.text.trim());
+
+      if (mounted) context.go('/admin-dashboard');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Access Denied!", style: TextStyle(color: Colors.white))));
     }
@@ -28,33 +39,42 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, foregroundColor: Colors.white, leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new), onPressed: () => context.pop())),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:[
-            const Icon(Icons.admin_panel_settings, size: 80, color: Color(0xFF00E5FF)),
-            const SizedBox(height: 20),
-            const Text("ADMIN PORTAL", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 3)),
-            const SizedBox(height: 40),
-            TextField(
-              controller: _email, style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(filled: true, fillColor: const Color(0xFF161B22), hintText: "Admin Email", hintStyle: const TextStyle(color: Colors.white30), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
-            ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: _password, obscureText: true, style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(filled: true, fillColor: const Color(0xFF161B22), hintText: "Password", hintStyle: const TextStyle(color: Colors.white30), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity, height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-                onPressed: _login,
-                child: const Text("LOGIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-              ),
-            )
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children:[
+              const Icon(Icons.admin_panel_settings, size: 80, color: Color(0xFF00E5FF)),
+              const SizedBox(height: 20),
+              const Text("ADMIN PORTAL", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 3)),
+              const SizedBox(height: 40),
+              _inputField(_email, "Admin Email", false),
+              const SizedBox(height: 15),
+              _inputField(_password, "Password", true),
+              const SizedBox(height: 15),
+              _inputField(_token, "GitHub Personal Access Token", true), // టోకెన్ ఎంటర్ చేయడానికి
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity, height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                  onPressed: _login,
+                  child: const Text("LOGIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              )
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _inputField(TextEditingController ctrl, String hint, bool isObscure) {
+    return TextField(
+      controller: ctrl, obscureText: isObscure, style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        filled: true, fillColor: const Color(0xFF161B22), 
+        hintText: hint, hintStyle: const TextStyle(color: Colors.white30), 
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)
       ),
     );
   }
@@ -63,6 +83,12 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
 
+  void _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('github_token'); // లాగౌట్ చేస్తే టోకెన్ డిలీట్ అవుతుంది
+    if (context.mounted) context.go('/home');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,12 +96,12 @@ class AdminDashboard extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF161B22),
         title: const Text("Admin Dashboard", style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold)),
-        actions:[IconButton(icon: const Icon(Icons.logout, color: Colors.redAccent), onPressed: () => context.go('/home'))],
+        actions:[IconButton(icon: const Icon(Icons.logout, color: Colors.redAccent), onPressed: () => _logout(context))],
       ),
       body: GridView.count(
         crossAxisCount: 2, padding: const EdgeInsets.all(20), crossAxisSpacing: 15, mainAxisSpacing: 15,
         children:[
-          _adminCard(context, "Albums & Songs", Icons.library_music, () => context.push('/admin-albums')), // తర్వాత చేద్దాం
+          _adminCard(context, "Albums & Songs", Icons.library_music, () => context.push('/admin-albums')), 
           _adminCard(context, "Books & PDFs", Icons.menu_book, () {}),
           _adminCard(context, "Audio Messages", Icons.mic, () {}),
           _adminCard(context, "Notifications", Icons.notifications_active, () {}),
