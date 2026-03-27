@@ -13,6 +13,11 @@ class _MusicHomeState extends State<MusicHome> {
   List<dynamic> _albums = [];
   bool _isLoading = true;
 
+  // Luminous Theme Colors
+  final Color bgDark = const Color(0xFF0D1117);
+  final Color accentCyan = const Color(0xFF00E5FF);
+  final Color accentPurple = const Color(0xFFA78BFA);
+
   @override
   void initState() {
     super.initState();
@@ -28,10 +33,62 @@ class _MusicHomeState extends State<MusicHome> {
     });
   }
 
+  // ఆల్బమ్ క్లిక్ చేసినప్పుడు పాటల లిస్ట్ చూపించే ఫంక్షన్
+  void _showSongs(dynamic album) {
+    List songs = album['songs'] ?? [];
+    String cover = album['coverUrl'] ?? '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: const Color(0xFF161B22),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 15),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(10))),
+            const SizedBox(height: 20),
+            Text(album['title'], style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+            Text("${songs.length} Songs", style: TextStyle(color: accentPurple, fontSize: 14)),
+            const Divider(color: Colors.white10, height: 30),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                itemCount: songs.length,
+                itemBuilder: (context, i) {
+                  return ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: accentCyan.withOpacity(0.1), shape: BoxShape.circle),
+                      child: Icon(Icons.play_arrow_rounded, color: accentCyan),
+                    ),
+                    title: Text(songs[i]['name'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    subtitle: Text(songs[i]['writer'] ?? 'Unknown', style: const TextStyle(color: Colors.white30, fontSize: 12)),
+                    trailing: const Icon(Icons.more_vert, color: Colors.white24),
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/player', extra: {'songs': songs, 'index': i, 'albumCover': cover});
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: bgDark,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -40,7 +97,7 @@ class _MusicHomeState extends State<MusicHome> {
           onPressed: () => context.pop(),
         ),
         title: const Text("MUSIC LIBRARY", 
-          style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.w800, color: Color(0xFF00E5FF))),
+          style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.w900, color: Color(0xFF00E5FF))),
         centerTitle: true,
         actions: [
           IconButton(icon: const Icon(Icons.refresh, color: Colors.white70), onPressed: _fetchAlbums),
@@ -49,60 +106,76 @@ class _MusicHomeState extends State<MusicHome> {
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)))
         : _albums.isEmpty 
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.library_music, size: 80, color: Colors.white10),
-                  const SizedBox(height: 10),
-                  const Text("No Albums Found", style: TextStyle(color: Colors.white30)),
-                  TextButton(onPressed: _fetchAlbums, child: const Text("Retry"))
-                ],
-              ),
-            )
-          : ListView.builder(
+          ? const Center(child: Text("No Albums Found", style: TextStyle(color: Colors.white24)))
+          : GridView.builder(
               padding: const EdgeInsets.all(20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // 2 కాలమ్స్ గ్రిడ్
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 20,
+                childAspectRatio: 0.75, // కార్డు షేప్ కోసం
+              ),
               itemCount: _albums.length,
               itemBuilder: (context, index) {
                 var album = _albums[index];
-                List songs = album['songs'] ?? [];
                 String cover = album['coverUrl'] ?? '';
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF161B22),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.05)),
-                  ),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                    child: ExpansionTile(
-                      tilePadding: const EdgeInsets.all(15),
-                      leading: Container(
-                        width: 60, height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          image: cover.isNotEmpty ? DecorationImage(image: NetworkImage(cover), fit: BoxFit.cover) : null,
-                          color: Colors.black38,
+                return InkWell(
+                  onTap: () => _showSongs(album),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF161B22),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withOpacity(0.05)),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Album Cover Image
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
+                              image: cover.isNotEmpty 
+                                ? DecorationImage(image: NetworkImage(cover), fit: BoxFit.cover) 
+                                : null,
+                              color: Colors.black38,
+                            ),
+                            child: cover.isEmpty 
+                              ? Center(child: Icon(Icons.album, size: 50, color: accentCyan.withOpacity(0.3))) 
+                              : null,
+                          ),
                         ),
-                        child: cover.isEmpty ? const Icon(Icons.album, color: Colors.white24) : null,
-                      ),
-                      title: Text(album['title'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                      subtitle: Text("${songs.length} Songs", style: const TextStyle(color: Color(0xFFA78BFA))),
-                      children: songs.asMap().entries.map((e) {
-                        int sIndex = e.key;
-                        var song = e.value;
-                        return ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                          leading: const Icon(Icons.play_circle_fill, color: Color(0xFF00E5FF), size: 30),
-                          title: Text(song['name'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-                          subtitle: Text(song['writer'], style: const TextStyle(color: Colors.white30, fontSize: 12)),
-                          onTap: () {
-                            context.push('/player', extra: {'songs': songs, 'index': sIndex, 'albumCover': cover});
-                          },
-                        );
-                      }).toList(),
+                        // Album Info
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                album['title'], 
+                                maxLines: 1, 
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: accentPurple.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: Text(
+                                  "${(album['songs'] as List).length} Songs", 
+                                  style: TextStyle(color: accentPurple, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
