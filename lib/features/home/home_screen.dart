@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF00E5FF)), // Neon Cyan Menu Icon
-        title: const Text("LUMINOUS WORD", style: TextStyle(letterSpacing: 3, fontWeight: FontWeight.w800, color: Color(0xFF00E5FF))),
+        title: const Text("LUMINOUS WORD", style: TextStyle(letterSpacing: 3, fontWeight: FontWeight.w900, color: Color(0xFF00E5FF))),
         centerTitle: true,
       ),
       // ఎడమ వైపు సైడ్ మెనూ (Drawer)
@@ -30,7 +30,8 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             _drawerItem(context, Icons.menu_book, "Bible", '/bible'),
-            _drawerItem(context, Icons.library_music, "Music", '/home'), // మ్యూజిక్ తర్వాత యాడ్ చేద్దాం
+            // ఇక్కడ మ్యూజిక్ లింక్ అప్‌డేట్ చేశాను
+            _drawerItem(context, Icons.library_music, "Music", '/music'), 
             _drawerItem(context, Icons.book, "Books & PDFs", '/home'),
             _drawerItem(context, Icons.question_answer, "Q & A", '/home'),
             const Spacer(),
@@ -55,7 +56,8 @@ class HomeScreen extends StatelessWidget {
         mainAxisSpacing: 15,
         children:[
           _homeCard(context, "BIBLE", Icons.menu_book, '/bible'),
-          _homeCard(context, "MUSIC", Icons.headphones, '/home'),
+          // ఇక్కడ కూడా మ్యూజిక్ లింక్ అప్‌డేట్ చేశాను
+          _homeCard(context, "MUSIC", Icons.headphones, '/music'), 
           _homeCard(context, "BOOKS", Icons.library_books, '/home'),
           _homeCard(context, "PROJECT H", Icons.star, '/home'),
         ],
@@ -65,7 +67,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _drawerItem(BuildContext context, IconData icon, String title, String route) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFFA78BFA)),
+      leading: Icon(icon, color: const Color(0xFFA78BFA)), // Purple Accent
       title: Text(title, style: const TextStyle(color: Colors.white)),
       onTap: () {
         Navigator.pop(context);
