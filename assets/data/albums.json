@@ -3,6 +3,15 @@
     "id": "1774593407071",
     "title": "devuni prapancham",
     "coverUrl": "",
-    "songs": []
+    "songs": [
+      {
+        "id": "1774593466715",
+        "name": "devuni sneham",
+        "writer": "Rajesh",
+        "coverUrl": "",
+        "audioUrl": "https://raw.githubusercontent.com/Rajatalluri91/World-of-God-Songs/main/Devuni%20Sneham.mp3",
+        "lyrics": "fafF"
+      }
+    ]
   }
 ]
