@@ -1,4 +1,4 @@
-name: Build App
+name: my_church_app
 on: [push]
 permissions:
   contents: write
