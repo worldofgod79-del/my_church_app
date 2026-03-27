@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
@@ -26,6 +28,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
 
+  // Crimson Theme Colors
+  final Color crimsonRed = const Color(0xFF8B0000);
+  final Color graphiteGray = const Color(0xFF1A1A1A);
+  final Color pureBlack = const Color(0xFF000000);
+
   @override
   void initState() {
     super.initState();
@@ -34,15 +41,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   }
 
   void _initPlayer() {
-    // 1. Listen to duration changes
     _player.onDurationChanged.listen((d) => setState(() => _duration = d));
-    // 2. Listen to position changes
     _player.onPositionChanged.listen((p) => setState(() => _position = p));
-    // 3. Listen to state changes (Play/Pause)
     _player.onPlayerStateChanged.listen((state) {
       setState(() => _isPlaying = state == PlayerState.playing);
     });
-    // 4. Auto-play next song when finished
     _player.onPlayerComplete.listen((event) {
       if (_isRepeat) {
         _playCurrentSong();
@@ -56,8 +59,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   Future<void> _playCurrentSong() async {
     String url = widget.songs[_currentIndex]['audioUrl'];
-    await _player.stop(); // Stop previous
-    await _player.play(UrlSource(url)); // Play new
+    await _player.stop();
+    await _player.play(UrlSource(url));
   }
 
   void _togglePlayPause() {
@@ -97,142 +100,172 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
   @override
   void dispose() {
-    _player.dispose(); // యాప్ బ్యాక్ వెళ్తే ఆగిపోతుంది
+    _player.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     var song = widget.songs[_currentIndex];
-    String cover = song['coverUrl'] != null && song['coverUrl'].toString().isNotEmpty ? song['coverUrl'] : widget.albumCover;
-    String lyrics = song['lyrics'] ?? "Lyrics not available";
+    String currentCover = (song['coverUrl'] != null && song['coverUrl'].toString().isNotEmpty) 
+        ? song['coverUrl'] 
+        : widget.albumCover;
+    String lyrics = song['lyrics'] ?? "Lyrics not provided for this song.";
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: pureBlack,
       appBar: AppBar(
-        backgroundColor: Colors.transparent, elevation: 0, foregroundColor: Colors.white,
-        leading: IconButton(icon: const Icon(Icons.keyboard_arrow_down, size: 30), onPressed: () => context.pop()),
-        title: const Text("NOW PLAYING", style: TextStyle(fontSize: 12, letterSpacing: 3, color: Color(0xFFA78BFA))),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.expand_more, size: 35, color: Colors.white70),
+          onPressed: () => context.pop(),
+        ),
+        title: const Text("NOW PLAYING", style: TextStyle(fontSize: 12, letterSpacing: 3, fontWeight: FontWeight.bold, color: Colors.grey)),
         centerTitle: true,
-        actions:[
+        actions: [
           IconButton(
-            icon: Icon(_showLyrics ? Icons.lyrics : Icons.lyrics_outlined, color: _showLyrics ? const Color(0xFF00E5FF) : Colors.white), 
-            onPressed: () => setState(() => _showLyrics = !_showLyrics)
+            icon: Icon(_showLyrics ? Icons.subject : Icons.notes, color: _showLyrics ? crimsonRed : Colors.white70),
+            onPressed: () => setState(() => _showLyrics = !_showLyrics),
           ),
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 25),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:[
-            // Cover Art or Lyrics Section
+          children: [
+            const SizedBox(height: 20),
+            // Segmented Card View for Image or Lyrics
             Expanded(
+              flex: 5,
               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 500),
-                child: _showLyrics 
-                  ? _buildLyricsView(lyrics) 
-                  : _buildCoverArt(cover),
+                duration: const Duration(milliseconds: 600),
+                child: _showLyrics ? _buildLyricsCard(lyrics) : _buildAlbumArt(currentCover),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
             
-            // Song Details
-            Text(song['name'], textAlign: TextAlign.center, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 5),
-            Text(song['writer'], style: const TextStyle(fontSize: 16, color: Color(0xFFA78BFA))),
-            const SizedBox(height: 30),
+            // Song Info Section
+            Column(
+              children: [
+                Text(song['name'], 
+                  textAlign: TextAlign.center, 
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
+                const SizedBox(height: 8),
+                Text(song['writer'] ?? 'Unknown Artist', 
+                  style: TextStyle(fontSize: 16, color: crimsonRed, fontWeight: FontWeight.w600, letterSpacing: 1.2)),
+              ],
+            ),
+            const SizedBox(height: 40),
 
-            // Progress Bar (Seekbar)
+            // Premium Red Seekbar
             SliderTheme(
               data: SliderThemeData(
-                trackHeight: 4,
-                activeTrackColor: const Color(0xFF00E5FF),
-                inactiveTrackColor: Colors.white24,
-                thumbColor: Colors.white,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                trackHeight: 3,
+                activeTrackColor: crimsonRed,
+                inactiveTrackColor: Colors.white10,
+                thumbColor: crimsonRed,
+                overlayColor: crimsonRed.withOpacity(0.2),
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               ),
               child: Slider(
                 min: 0,
                 max: _duration.inSeconds.toDouble(),
                 value: _position.inSeconds.toDouble().clamp(0, _duration.inSeconds.toDouble()),
-                onChanged: (val) {
-                  _player.seek(Duration(seconds: val.toInt()));
-                },
+                onChanged: (val) => _player.seek(Duration(seconds: val.toInt())),
               ),
             ),
             
-            // Time Indicators
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children:[
-                  Text(_formatTime(_position), style: const TextStyle(color: Colors.white54, fontSize: 12)),
-                  Text(_formatTime(_duration), style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                children: [
+                  Text(_formatTime(_position), style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                  Text(_formatTime(_duration), style: const TextStyle(color: Colors.white38, fontSize: 12)),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-            // Media Controls
+            // Playback Controls
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children:[
+              children: [
                 IconButton(
-                  icon: Icon(Icons.shuffle, color: _isShuffle ? const Color(0xFF00E5FF) : Colors.white54),
+                  icon: Icon(Icons.shuffle, color: _isShuffle ? crimsonRed : Colors.white38),
                   onPressed: () => setState(() => _isShuffle = !_isShuffle),
                 ),
-                IconButton(icon: const Icon(Icons.skip_previous, color: Colors.white, size: 40), onPressed: _playPrevious),
+                IconButton(
+                  icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 45),
+                  onPressed: _playPrevious,
+                ),
                 
-                // Play/Pause Button
+                // Main Crimson Play Button
                 GestureDetector(
                   onTap: _togglePlayPause,
                   child: Container(
-                    height: 70, width: 70,
-                    decoration: const BoxDecoration(color: Color(0xFF00E5FF), shape: BoxShape.circle, boxShadow:[BoxShadow(color: Color(0x6600E5FF), blurRadius: 20)]),
-                    child: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.black, size: 40),
+                    height: 80, width: 80,
+                    decoration: BoxDecoration(
+                      color: crimsonRed,
+                      shape: BoxShape.circle,
+                      boxShadow: [BoxShadow(color: crimsonRed.withOpacity(0.4), blurRadius: 25, spreadRadius: 2)],
+                    ),
+                    child: Icon(_isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, color: Colors.white, size: 50),
                   ),
                 ),
                 
-                IconButton(icon: const Icon(Icons.skip_next, color: Colors.white, size: 40), onPressed: _playNext),
                 IconButton(
-                  icon: Icon(Icons.repeat, color: _isRepeat ? const Color(0xFF00E5FF) : Colors.white54),
+                  icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 45),
+                  onPressed: _playNext,
+                ),
+                IconButton(
+                  icon: Icon(Icons.repeat_one_rounded, color: _isRepeat ? crimsonRed : Colors.white38),
                   onPressed: () => setState(() => _isRepeat = !_isRepeat),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 50),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCoverArt(String coverUrl) {
+  // Cover Image Card
+  Widget _buildAlbumArt(String url) {
     return Container(
       key: const ValueKey(1),
       width: double.infinity,
       decoration: BoxDecoration(
+        color: graphiteGray,
         borderRadius: BorderRadius.circular(30),
-        color: const Color(0xFF161B22),
-        boxShadow: const[BoxShadow(color: Colors.black54, blurRadius: 30, offset: Offset(0, 15))],
-        image: coverUrl.isNotEmpty ? DecorationImage(image: NetworkImage(coverUrl), fit: BoxFit.cover) : null,
+        border: Border.all(color: crimsonRed.withOpacity(0.3), width: 2),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 40, offset: const Offset(0, 20))],
+        image: url.isNotEmpty ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover) : null,
       ),
-      child: coverUrl.isEmpty ? const Icon(Icons.music_note, size: 100, color: Colors.white24) : null,
+      child: url.isEmpty ? Icon(Icons.music_note, size: 100, color: crimsonRed.withOpacity(0.2)) : null,
     );
   }
 
-  Widget _buildLyricsView(String lyrics) {
+  // Lyrics Card
+  Widget _buildLyricsCard(String lyrics) {
     return Container(
       key: const ValueKey(2),
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: const Color(0xFF161B22), borderRadius: BorderRadius.circular(30), border: Border.all(color: Colors.white10)),
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: graphiteGray,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        child: Text(lyrics, style: const TextStyle(fontSize: 18, color: Colors.white, height: 1.8), textAlign: TextAlign.center),
+        child: Text(
+          lyrics,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 19, color: Colors.white70, height: 1.8, letterSpacing: 0.5),
+        ),
       ),
     );
   }
