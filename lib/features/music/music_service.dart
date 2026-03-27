@@ -2,19 +2,30 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class MusicService {
-  // ఇది నీ గిట్‌హబ్ లోని albums.json ఫైల్ యొక్క "Raw" లింక్ (దీని వల్ల లైవ్ అప్‌డేట్స్ వస్తాయి)
-  final String rawUrl = "https://raw.githubusercontent.com/worldofgod79-del/my_church_app/main/assets/data/albums.json";
+  final String owner = "worldofgod79-del";
+  final String repo = "my_church_app";
+  final String filePath = "assets/data/albums.json";
 
   Future<List<dynamic>> getLiveAlbums() async {
+    // CDN కి బదులుగా నేరుగా GitHub API ని వాడుతున్నాం (Real-time)
+    final url = Uri.parse("https://api.github.com/repos/$owner/$repo/contents/$filePath");
+    
     try {
-      // ఇంటర్నెట్ నుండి నేరుగా ఫైల్ చదవడం
-      final response = await http.get(Uri.parse(rawUrl));
+      final response = await http.get(url);
+      
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final data = json.decode(response.body);
+        // గిట్‌హబ్ పంపే బేస్64 డేటాని నార్మల్ టెక్స్ట్ గా మార్చడం
+        String base64Content = data['content'].replaceAll('\n', '').trim();
+        String decodedString = utf8.decode(base64.decode(base64Content));
+        return json.decode(decodedString);
+      } else {
+        print("GitHub API Error: ${response.statusCode}");
+        return [];
       }
-      return [];
     } catch (e) {
-      return[]; // నెట్ లేకపోతే లేదా ఫైల్ లేకపోతే ఖాళీ లిస్ట్ ఇస్తుంది
+      print("Fetch Error: $e");
+      return [];
     }
   }
 }
