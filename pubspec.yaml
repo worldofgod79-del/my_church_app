@@ -1,55 +1,39 @@
 name: my_church_app
-on: [push]
-permissions:
-  contents: write
-jobs:
-  # 1. వెబ్ బిల్డ్ (Instant Preview)
-  build_web:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-      - name: Configure Web
-        run: |
-          flutter create . --platforms web
-          flutter pub get
-      - name: Build Web
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
 
-  # 2. ఆండ్రాయిడ్ APK బిల్డ్ (పర్మిషన్స్ ఇంజెక్ట్ చేయబడ్డాయి)
-  build_apk:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-      
-      - name: Create Clean Android Project
-        run: |
-          flutter create . --platforms android
-          flutter pub get
+# ఇక్కడ ఎర్రర్ వస్తోంది, దీన్ని ఇప్పుడు సరిచేశాను
+environment:
+  sdk: '>=3.0.0 <4.0.0'
 
-      # ఇది మ్యాజిక్ స్టెప్: AndroidManifest లోకి ఇంటర్నెట్ పర్మిషన్ యాడ్ చేస్తుంది
-      - name: Inject Internet Permission
-        run: |
-          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET"/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>' android/app/src/main/AndroidManifest.xml
-          sed -i 's/<application/<application android:usesCleartextTraffic="true"/' android/app/src/main/AndroidManifest.xml
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  go_router: ^14.0.0
+  scrollable_positioned_list: ^0.3.8
+  http: ^1.2.0
+  shared_preferences: ^2.3.0
+  share_plus: ^10.1.0
+  xml: ^6.5.0
+  audioplayers: ^5.2.1
 
-      - name: Build APK
-        run: flutter build apk --release
-        
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  # అసెట్స్ ఇక్కడ ఉన్నాయి
+  assets:
+    - assets/bible.xml
+    - assets/data/
+    
+  # నువ్వు అడిగిన తెలుగు ఫాంట్ ఇక్కడ ఉంది
+  fonts:
+    - family: BalooTammudu2
+      fonts:
+        - asset: assets/fonts/BalooTammudu2.ttf
