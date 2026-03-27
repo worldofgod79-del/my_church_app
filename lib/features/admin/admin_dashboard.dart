@@ -11,24 +11,25 @@ class AdminLoginScreen extends StatefulWidget {
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
-  final TextEditingController _token = TextEditingController(); // కొత్తగా టోకెన్ ఫీల్డ్
+  final TextEditingController _token = TextEditingController(); 
   
-  final String adminEmail = "admin@luminousword.com"; 
+  // కేవలం నీ మెయిల్ మాత్రమే యాక్సెప్ట్ చేస్తుంది
+  final String adminEmail = "worldofgod79@gmail.com"; 
 
   void _login() async {
+    // మెయిల్ మరియు పాస్వర్డ్ చెక్
     if (_email.text.trim() == adminEmail && _password.text == "admin123") {
       if (_token.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("GitHub Token is required!")));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("GitHub Token is required!", style: TextStyle(color: Colors.white))));
         return;
       }
       
-      // లాగిన్ సక్సెస్ అయ్యాక, టోకెన్‌ని ఫోన్ మెమరీలో సేవ్ చేస్తున్నాం
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('github_token', _token.text.trim());
 
       if (mounted) context.go('/admin-dashboard');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Access Denied!", style: TextStyle(color: Colors.white))));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(backgroundColor: Colors.red, content: Text("Access Denied! You are not an Admin.", style: TextStyle(color: Colors.white))));
     }
   }
 
@@ -47,18 +48,18 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               const SizedBox(height: 20),
               const Text("ADMIN PORTAL", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 3)),
               const SizedBox(height: 40),
-              _inputField(_email, "Admin Email", false),
+              _inputField(_email, "Admin Email (worldofgod79@...)", false),
               const SizedBox(height: 15),
               _inputField(_password, "Password", true),
               const SizedBox(height: 15),
-              _inputField(_token, "GitHub Personal Access Token", true), // టోకెన్ ఎంటర్ చేయడానికి
+              _inputField(_token, "GitHub Personal Access Token", true), 
               const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity, height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
                   onPressed: _login,
-                  child: const Text("LOGIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+                  child: const Text("LOGIN", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.5)),
                 ),
               )
             ],
@@ -85,7 +86,7 @@ class AdminDashboard extends StatelessWidget {
 
   void _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('github_token'); // లాగౌట్ చేస్తే టోకెన్ డిలీట్ అవుతుంది
+    await prefs.remove('github_token'); 
     if (context.mounted) context.go('/home');
   }
 
@@ -95,7 +96,7 @@ class AdminDashboard extends StatelessWidget {
       backgroundColor: const Color(0xFF0D1117),
       appBar: AppBar(
         backgroundColor: const Color(0xFF161B22),
-        title: const Text("Admin Dashboard", style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold)),
+        title: const Text("Admin Dashboard", style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold, letterSpacing: 1)),
         actions:[IconButton(icon: const Icon(Icons.logout, color: Colors.redAccent), onPressed: () => _logout(context))],
       ),
       body: GridView.count(
