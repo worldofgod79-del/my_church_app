@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// --- Imports (Feature Screens) ---
+// --- Imports (అన్ని స్క్రీన్స్ ఇక్కడ లింక్ చేయబడ్డాయి) ---
 import '../features/splash/splash_screen.dart';
 import '../features/home/home_screen.dart';
 
@@ -13,25 +13,29 @@ import '../features/bible/bible_search.dart';
 // Music Features
 import '../features/music/music_player.dart';
 
-// Admin Features
+// Books & PDF Features
+import '../features/books/books_home.dart';
+
+// Admin Features (WOG Admin Panel)
 import '../features/admin/admin_dashboard.dart';
 import '../features/admin/admin_albums.dart';
+import '../features/admin/admin_books.dart';
 
 // --- Router Configuration ---
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: [
-    // 1. ప్రాథమిక స్క్రీన్స్ (Splash & Main Home)
+    // 1. Splash & Main Home
     GoRoute(
       path: '/',
       builder: (context, state) => const SplashScreen(),
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) => const HomeScreen(), // ఇక్కడే Bottom Nav Tabs ఉంటాయి
+      builder: (context, state) => const HomeScreen(),
     ),
 
-    // 2. బైబిల్ సెక్షన్ (బైబిల్ మెయిన్ గ్రిడ్, రీడర్ మరియు సెర్చ్)
+    // 2. Bible Section
     GoRoute(
       path: '/bible',
       builder: (context, state) => const BibleHome(),
@@ -53,7 +57,7 @@ final GoRouter router = GoRouter(
       },
     ),
 
-    // 3. మ్యూజిక్ ప్లేయర్ (ఇది ఫుల్ స్క్రీన్ లో ఓపెన్ అవుతుంది)
+    // 3. Music Player (Full Screen)
     GoRoute(
       path: '/player',
       builder: (context, state) {
@@ -66,7 +70,19 @@ final GoRouter router = GoRouter(
       },
     ),
 
-    // 4. అడ్మిన్ ప్యానెల్ (సెక్యూరిటీ లాగిన్ తో కూడినది)
+    // 4. PDF Reader Screen
+    GoRoute(
+      path: '/pdf-reader',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+        return PDFReaderScreen(
+          url: extra['url'] ?? '',
+          title: extra['title'] ?? 'Book',
+        );
+      },
+    ),
+
+    // 5. Admin Section (WORLD OF GOD Admin Portal)
     GoRoute(
       path: '/admin-login',
       builder: (context, state) => const AdminLoginScreen(),
@@ -78,6 +94,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/admin-albums',
       builder: (context, state) => const AdminAlbumsScreen(),
+    ),
+    GoRoute(
+      path: '/admin-books',
+      builder: (context, state) => const AdminBooksScreen(),
     ),
   ],
 );
