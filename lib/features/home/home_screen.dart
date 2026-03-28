@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // Navigation కోసం ఇది ముఖ్యం
 import '../../widgets/side_menu.dart';
 import '../music/music_home.dart';
-// Note: మిగతా ఫీచర్లు (Books, Audio) ఇంకా చేయలేదు కాబట్టి Placeholder ఇస్తున్నాను.
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,57 +10,49 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 2; // Default గా Home (Center) సెలెక్ట్ అయి ఉంటుంది.
+  int _selectedIndex = 2; 
 
-  // Tabs ఆర్గనైజ్ చేయడం
   final List<Widget> _pages = [
-    const MusicHome(),      // Index 0: Music
-    const Center(child: Text("Books Section Coming Soon")), // Index 1: Books
-    const HomeContentView(), // Index 2: Actual Home Content
-    const Center(child: Text("Audio Messages Coming Soon")), // Index 3: Audio
-    const Center(child: Text("Project H Coming Soon")), // Index 4: Project H
+    const MusicHome(),      
+    const Center(child: Text("Books Section Coming Soon", style: TextStyle(color: Colors.white))),
+    const HomeContentView(), 
+    const Center(child: Text("Audio Messages Coming Soon", style: TextStyle(color: Colors.white))),
+    const Center(child: Text("Project H Coming Soon", style: TextStyle(color: Colors.white))),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF050505),
-      drawer: const SideMenu(), // విడిగా చేసిన ఫైల్ ఇక్కడ కనెక్ట్ చేశాను
+      drawer: const SideMenu(),
       body: _pages[_selectedIndex],
-      bottomNavigationBar: _buildBottomNavBar(),
-    );
-  }
-
-  Widget _buildBottomNavBar() {
-    return Container(
-      height: 85,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0A),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        backgroundColor: Colors.transparent,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFF00D2FF),
-        unselectedItemColor: Colors.white24,
-        selectedFontSize: 10,
-        unselectedFontSize: 10,
-        elevation: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.headphones_outlined), label: "MUSIC"),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), label: "BOOKS"),
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: "HOME"),
-          BottomNavigationBarItem(icon: Icon(Icons.mic_none_rounded), label: "AUDIO"),
-          BottomNavigationBarItem(icon: Icon(Icons.star_outline_rounded), label: "PROJECT H"),
-        ],
+      bottomNavigationBar: Container(
+        height: 85,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0A),
+          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          backgroundColor: Colors.transparent,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: const Color(0xFF00D2FF),
+          unselectedItemColor: Colors.white24,
+          elevation: 0,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.headphones_outlined), label: "MUSIC"),
+            BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), label: "BOOKS"),
+            BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: "HOME"),
+            BottomNavigationBarItem(icon: Icon(Icons.mic_none_rounded), label: "AUDIO"),
+            BottomNavigationBarItem(icon: Icon(Icons.star_outline_rounded), label: "PROJECT H"),
+          ],
+        ),
       ),
     );
   }
 }
 
-// అసలైన హోమ్ పేజీ కంటెంట్ (Live + Notifications + Bible)
 class HomeContentView extends StatelessWidget {
   const HomeContentView({super.key});
 
@@ -71,14 +63,13 @@ class HomeContentView extends StatelessWidget {
         SliverAppBar(
           expandedHeight: 80,
           backgroundColor: Colors.transparent,
-          elevation: 0,
           leading: Builder(
             builder: (context) => IconButton(
               icon: const Icon(Icons.menu_rounded, color: Color(0xFF00D2FF)),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
           ),
-          title: const Text("LUMINOUS", style: TextStyle(letterSpacing: 6, fontWeight: FontWeight.w200)),
+          title: const Text("LUMINOUS", style: TextStyle(letterSpacing: 6, fontWeight: FontWeight.w200, color: Colors.white)),
           centerTitle: true,
         ),
         SliverToBoxAdapter(
@@ -87,13 +78,13 @@ class HomeContentView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLiveStatus(), // LIVE సెక్షన్
+                _buildLiveStatus(),
                 const SizedBox(height: 30),
                 const Text("DAILY NOTIFICATIONS", style: TextStyle(letterSpacing: 2, color: Colors.white38, fontWeight: FontWeight.bold, fontSize: 11)),
                 const SizedBox(height: 15),
-                _buildNotificationsList(), // రోజువారీ నోటిఫికేషన్లు
+                _buildNotificationsList(),
                 const SizedBox(height: 35),
-                _buildBibleHero(context), // Bible Hero Card
+                _buildBibleHero(context), // ఇక్కడ నావిగేషన్ ఫిక్స్ చేశాను
                 const SizedBox(height: 100),
               ],
             ),
@@ -111,14 +102,13 @@ class HomeContentView extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const CircleAvatar(radius: 5, backgroundColor: Colors.redAccent), // Pulse effect తర్వాత యాడ్ చేయొచ్చు
-          const SizedBox(width: 12),
-          const Text("LIVE NOW:", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 12)),
-          const SizedBox(width: 10),
-          const Expanded(child: Text("Sunday Service at 10 AM", style: TextStyle(color: Colors.white70), overflow: TextOverflow.ellipsis)),
-          Icon(Icons.arrow_forward_ios, size: 12, color: Colors.white.withOpacity(0.2)),
+          CircleAvatar(radius: 5, backgroundColor: Colors.redAccent),
+          SizedBox(width: 12),
+          Text("LIVE NOW:", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+          SizedBox(width: 10),
+          Expanded(child: Text("Sunday Service at 10 AM", style: TextStyle(color: Colors.white70), overflow: TextOverflow.ellipsis)),
         ],
       ),
     );
@@ -155,7 +145,8 @@ class HomeContentView extends StatelessWidget {
 
   Widget _buildBibleHero(BuildContext context) {
     return InkWell(
-      onTap: () => Navigator.pushNamed(context, '/bible'), // Route connection
+      // ఫిక్స్: Navigator.pushNamed బదులుగా context.push వాడాలి
+      onTap: () => context.push('/bible'), 
       child: Container(
         height: 180,
         width: double.infinity,
