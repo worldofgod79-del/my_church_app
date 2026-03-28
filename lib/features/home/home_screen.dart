@@ -7,100 +7,112 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text("LUMINOUS WORD", style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.w900, color: Color(0xFF00E5FF))),
-        centerTitle: true,
-      ),
-      drawer: _buildDrawer(context),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _largeCard(context, "THE HOLY BIBLE", "పరిశుద్ధ గ్రంథము", Icons.auto_stories, '/bible'),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(child: _squareCard(context, "MUSIC", Icons.headphones, '/music')),
-                const SizedBox(width: 15),
-                Expanded(child: _squareCard(context, "BOOKS", Icons.menu_book, '/home')),
-              ],
+      backgroundColor: const Color(0xFF050505), // Deep Midnight
+      body: CustomScrollView(
+        slivers: [
+          // Elegant Glassy Top Bar
+          SliverAppBar(
+            expandedHeight: 120,
+            floating: true,
+            backgroundColor: Colors.transparent,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 20, bottom: 15),
+              title: const Text("LUMINOUS", style: TextStyle(letterSpacing: 8, fontWeight: FontWeight.w200, color: Colors.white)),
             ),
-            const SizedBox(height: 20),
-            _largeCard(context, "AUDIO MESSAGES", "దైవ సందేశాలు", Icons.mic_external_on, '/home'),
-            const SizedBox(height: 20),
-            _largeCard(context, "PROJECT H", "Special Projects", Icons.star_rounded, '/home'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _largeCard(BuildContext context, String title, String sub, IconData icon, String route) {
-    return InkWell(
-      onTap: () => route != '/home' ? context.push(route) : null,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(25),
-        decoration: BoxDecoration(
-          color: const Color(0xFF161616),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 40, color: const Color(0xFF00E5FF)),
-            const SizedBox(width: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1, color: Colors.white)),
-                Text(sub, style: const TextStyle(fontSize: 14, color: Colors.white38)),
-              ],
+            actions: [
+              IconButton(icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.white24), 
+              onPressed: () => context.push('/admin-login')),
+            ],
+          ),
+          
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeroCard(context), // Featured Section
+                  const SizedBox(height: 30),
+                  const Text("EXPLORE", style: TextStyle(letterSpacing: 2, color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12)),
+                  const SizedBox(height: 15),
+                  _buildModularGrid(context),
+                  const SizedBox(height: 100),
+                ],
+              ),
             ),
-            const Spacer(),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white12),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _squareCard(BuildContext context, String title, IconData icon, String route) {
-    return InkWell(
-      onTap: () => route != '/home' ? context.push(route) : null,
-      child: Container(
-        height: 140,
-        decoration: BoxDecoration(
-          color: const Color(0xFF161616),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 40, color: const Color(0xFFA78BFA)),
-            const SizedBox(height: 12),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.5, color: Colors.white)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDrawer(BuildContext context) {
-    return Drawer(
-      backgroundColor: const Color(0xFF0F0F0F),
-      child: Column(
-        children: [
-          const DrawerHeader(child: Center(child: Icon(Icons.auto_stories, size: 60, color: Color(0xFF00E5FF)))),
-          ListTile(
-            leading: const Icon(Icons.admin_panel_settings, color: Colors.redAccent),
-            title: const Text("Admin Portal", style: TextStyle(color: Colors.white)),
-            onTap: () => context.push('/admin-login'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHeroCard(BuildContext context) {
+    return InkWell(
+      onTap: () => context.push('/bible'),
+      child: Container(
+        height: 200,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: const LinearGradient(colors: [Color(0xFF00D2FF), Color(0xFF9D50BB)]), // Cyber Gradient
+        ),
+        child: Stack(
+          children: [
+            Positioned(right: -30, bottom: -30, child: Icon(Icons.auto_stories, size: 200, color: Colors.white.withOpacity(0.1))),
+            const Padding(
+              padding: EdgeInsets.all(30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("THE HOLY BIBLE", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white)),
+                  Text("Continue Reading...", style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w300)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModularGrid(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _categoryCard(context, "MUSIC", Icons.headphones, const Color(0xFF121212), '/music')),
+            const SizedBox(width: 15),
+            Expanded(child: _categoryCard(context, "BOOKS", Icons.menu_book, const Color(0xFF121212), '/music')),
+          ],
+        ),
+        const SizedBox(height: 15),
+        _categoryCard(context, "AUDIO MESSAGES", Icons.mic_none_rounded, const Color(0xFF121212), '/music', isWide: true),
+      ],
+    );
+  }
+
+  Widget _categoryCard(BuildContext context, String title, IconData icon, Color bg, String route, {bool isWide = false}) {
+    return InkWell(
+      onTap: () => context.push(route),
+      child: Container(
+        height: isWide ? 100 : 160,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: isWide 
+          ? Row(children: [Icon(icon, color: const Color(0xFF00D2FF)), const SizedBox(width: 20), Text(title, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2))])
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 40, color: const Color(0xFF00D2FF)),
+                const SizedBox(height: 15),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1.5)),
+              ],
+            ),
       ),
     );
   }
