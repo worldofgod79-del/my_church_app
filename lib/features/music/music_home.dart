@@ -16,40 +16,46 @@ class _MusicHomeState extends State<MusicHome> {
   @override
   void initState() {
     super.initState();
-    _fetchAlbums();
+    _fetch();
   }
 
-  _fetchAlbums() async {
-    setState(() => _isLoading = true);
+  _fetch() async {
     final data = await _service.getLiveAlbums();
     setState(() { _albums = data; _isLoading = false; });
   }
 
-  void _showSongs(dynamic album) {
-    List songs = album['songs'] ?? [];
-    String cover = album['coverUrl'] ?? '';
-
+  void _openAlbum(dynamic album) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(color: Color(0xFF121212), borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(color: Color(0xFF0A0A0A), borderRadius: BorderRadius.vertical(top: Radius.circular(40))),
         child: Column(
           children: [
             const SizedBox(height: 15),
-            Text(album['title'], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF8B0000))),
-            const Divider(color: Colors.white10),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10))),
+            const SizedBox(height: 30),
+            _albumHeader(album),
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: songs.length,
-                itemBuilder: (context, i) => ListTile(
-                  leading: const Icon(Icons.play_arrow, color: Color(0xFF8B0000)),
-                  title: Text(songs[i]['name']),
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.push('/player', extra: {'songs': songs, 'index': i, 'albumCover': cover});
-                  },
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: (album['songs'] as List).length,
+                itemBuilder: (context, i) {
+                  var song = album['songs'][i];
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    leading: CircleAvatar(backgroundColor: Colors.white.withOpacity(0.05), child: const Icon(Icons.play_arrow, color: Color(0xFF00D2FF))),
+                    title: Text(song['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    subtitle: Text(song['writer'] ?? 'Unknown', style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push('/player', extra: {'songs': album['songs'], 'index': i, 'albumCover': album['coverUrl']});
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -58,37 +64,54 @@ class _MusicHomeState extends State<MusicHome> {
     );
   }
 
+  Widget _albumHeader(dynamic album) {
+    return Column(
+      children: [
+        Container(
+          width: 180, height: 180,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20)],
+            image: DecorationImage(image: NetworkImage(album['coverUrl']), fit: BoxFit.cover),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(album['title'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900)),
+        const Text("ALBUM", style: TextStyle(letterSpacing: 4, color: Colors.white24, fontSize: 10)),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("MUSIC", style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold))),
+      backgroundColor: const Color(0xFF050505),
+      appBar: AppBar(backgroundColor: Colors.transparent, title: const Text("LIBRARY", style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.w300))),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: Color(0xFF8B0000)))
+        ? const Center(child: CircularProgressIndicator(color: Color(0xFF00D2FF)))
         : GridView.builder(
             padding: const EdgeInsets.all(20),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 20, childAspectRatio: 0.8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 25, crossAxisSpacing: 20, childAspectRatio: 0.75),
             itemCount: _albums.length,
             itemBuilder: (context, index) {
               var album = _albums[index];
-              String cover = album['coverUrl'] ?? '';
               return InkWell(
-                onTap: () => _showSongs(album),
+                onTap: () => _openAlbum(album),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          image: cover.isNotEmpty ? DecorationImage(image: NetworkImage(cover), fit: BoxFit.cover) : null,
-                          color: const Color(0xFF1A1A1A),
-                          border: Border.all(color: const Color(0xFF8B0000).withOpacity(0.2)),
+                          borderRadius: BorderRadius.circular(25),
+                          image: DecorationImage(image: NetworkImage(album['coverUrl']), fit: BoxFit.cover),
+                          border: Border.all(color: Colors.white.withOpacity(0.05)),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(album['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text("${(album['songs'] as List).length} Songs", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    const SizedBox(height: 12),
+                    Text(album['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), maxLines: 1),
+                    Text("${(album['songs'] as List).length} Tracks", style: const TextStyle(color: Colors.white38, fontSize: 12)),
                   ],
                 ),
               );
