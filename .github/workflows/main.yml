@@ -3,6 +3,7 @@ on: [push]
 permissions:
   contents: write
 jobs:
+  # 1. వెబ్ బిల్డ్ (Instant Preview కోసం)
   build_web:
     runs-on: ubuntu-latest
     steps:
@@ -15,14 +16,18 @@ jobs:
         run: |
           flutter create --project-name my_church_app . --platforms web
           flutter pub get
+      
+      # ఇక్కడ --no-wasm యాడ్ చేశాం, దీనివల్ల ఆడియో ప్లేయర్ ఎర్రర్స్ రావు
       - name: Build Web
-        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+        run: flutter build web --release --no-wasm --base-href "/${{ github.event.repository.name }}/"
+      
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/web
 
+  # 2. ఆండ్రాయిడ్ APK బిల్డ్
   build_apk:
     runs-on: ubuntu-latest
     steps:
@@ -31,10 +36,9 @@ jobs:
         with:
           channel: 'stable'
           cache: true
-      
+
       - name: Create Clean Android Project
         run: |
-          # ఇక్కడ మనం పేరుని ఖచ్చితంగా చెబుతున్నాం
           flutter create --project-name my_church_app . --platforms android
           flutter pub get
 
@@ -45,7 +49,7 @@ jobs:
 
       - name: Build APK
         run: flutter build apk --release
-        
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
