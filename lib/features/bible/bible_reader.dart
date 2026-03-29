@@ -30,7 +30,7 @@ class _BibleReaderState extends State<BibleReader> {
   
   bool _loading = true;
   bool _isDark = true;
-  double _fontSize = 22.0;
+  double _fontSize = 18.0; // Default size reduced for cleanliness
   List<String> _bookmarks = [];
   Map<String, int> _verseColors = {};
   Set<String> _selectedVerses = {};
@@ -52,7 +52,7 @@ class _BibleReaderState extends State<BibleReader> {
       setState(() {
         _chapters = data["chapters"];
         _isDark = prefs.getBool('isDark') ?? true;
-        _fontSize = prefs.getDouble('fontSize') ?? 22.0;
+        _fontSize = prefs.getDouble('fontSize') ?? 18.0;
         _bookmarks = prefs.getStringList('bookmarks') ?? [];
         String colorData = prefs.getString('verse_colors') ?? "{}";
         _verseColors = Map<String, int>.from(json.decode(colorData));
@@ -92,10 +92,15 @@ class _BibleReaderState extends State<BibleReader> {
     String key = "${widget.bookName}_${_currentChapter}_$vNum";
     bool isBookmarked = _bookmarks.contains(key);
 
+    // Cross Reference Data Fetching
     final crossData = await _crossService.getReferences(widget.bookName);
     List refs = [];
-    if (crossData != null && crossData[_currentChapter] != null) {
-      refs = crossData[_currentChapter][vNum] ?? [];
+    if (crossData != null) {
+      // JSON లో కీస్ String లా ఉన్నా Integer లా ఉన్నా పనిచేసేలా మార్పు
+      var chapterData = crossData[_currentChapter];
+      if (chapterData != null) {
+        refs = chapterData[vNum] ?? [];
+      }
     }
 
     showModalBottomSheet(
@@ -121,7 +126,7 @@ class _BibleReaderState extends State<BibleReader> {
                 children: [
                   ListTile(
                     leading: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border, color: accentCyan),
-                    title: Text(isBookmarked ? "Remove Bookmark" : "Save Bookmark", 
+                    title: Text(isBookmarked ? "బుక్‌మార్క్ తీసివేయి" : "బుక్‌మార్క్ సేవ్ చేయి", 
                       style: TextStyle(color: _isDark ? Colors.white : Colors.black)),
                     onTap: () { setState(() { isBookmarked ? _bookmarks.remove(key) : _bookmarks.add(key); }); _save(); Navigator.pop(context); },
                   ),
@@ -130,7 +135,7 @@ class _BibleReaderState extends State<BibleReader> {
                     child: Text("CROSS REFERENCES", style: TextStyle(letterSpacing: 2, fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
                   ),
                   if (refs.isEmpty) 
-                    const Padding(padding: EdgeInsets.all(15), child: Text("No references found.", style: TextStyle(color: Colors.white30)))
+                    const Padding(padding: EdgeInsets.all(15), child: Text("రిఫరెన్సులు ఏమీ దొరకలేదు.", style: TextStyle(color: Colors.white30)))
                   else
                     ...refs.map((r) {
                       return ListTile(
@@ -170,12 +175,11 @@ class _BibleReaderState extends State<BibleReader> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return Scaffold(backgroundColor: bgDark, body: Center(child: CircularProgressIndicator(color: accentCyan)));
-    var sortedChapters = _getSortedKeys(_chapters.keys);
+    var chapters = _getSortedKeys(_chapters.keys);
     var versesMap = _chapters[_currentChapter] ?? {};
     var sortedVerses = _getSortedKeys(versesMap.keys);
 
     final Color bgColor = _isDark ? bgDark : const Color(0xFFF9FAFB);
-    // ఇక్కడ whiteEms ని white70 గా ఫిక్స్ చేశాను
     final Color txtColor = _isDark ? Colors.white70 : Colors.black87;
 
     return Scaffold(
@@ -193,12 +197,12 @@ class _BibleReaderState extends State<BibleReader> {
             onSelected: (val) {
               if (val == 'dark') setState(() { _isDark = !_isDark; _save(); });
               if (val == 'in') setState(() { if(_fontSize < 45) _fontSize += 2; _save(); });
-              if (val == 'out') setState(() { if(_fontSize > 14) _fontSize -= 2; _save(); });
+              if (val == 'out') setState(() { if(_fontSize > 12) _fontSize -= 2; _save(); });
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 'dark', child: ListTile(leading: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round, color: accentCyan), title: const Text("Theme"))),
-              const PopupMenuItem(value: 'in', child: ListTile(leading: Icon(Icons.zoom_in), title: Text("Zoom In"))),
-              const PopupMenuItem(value: 'out', child: ListTile(leading: Icon(Icons.zoom_out), title: Text("Zoom Out"))),
+              PopupMenuItem(value: 'in', child: ListTile(leading: const Icon(Icons.zoom_in), title: const Text("Zoom In"))),
+              PopupMenuItem(value: 'out', child: ListTile(leading: const Icon(Icons.zoom_out), title: const Text("Zoom Out"))),
             ],
           ),
         ],
@@ -218,7 +222,8 @@ class _BibleReaderState extends State<BibleReader> {
                     children: [
                       Text("WORLD OF GOD", style: TextStyle(fontSize: 12, letterSpacing: 4, fontWeight: FontWeight.bold, color: accentCyan)),
                       const SizedBox(height: 10),
-                      Text("${widget.bookName} $_currentChapter", style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: _isDark ? Colors.white : Colors.black, letterSpacing: -1.5)),
+                      Text(widget.bookName, style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: _isDark ? Colors.white : Colors.black, letterSpacing: -1.5)),
+                      Text("అధ్యాయం $_currentChapter", style: TextStyle(fontSize: 20, color: _isDark ? Colors.white54 : Colors.black54)),
                     ],
                   ),
                 );
@@ -276,7 +281,7 @@ class _BibleReaderState extends State<BibleReader> {
                       border: Border.all(color: Colors.white.withOpacity(0.1)),
                     ),
                     child: _selectedVerses.isEmpty 
-                        ? _buildNavPill(sortedChapters, sortedVerses) 
+                        ? _buildNavPill(chapters, sortedVerses) 
                         : _buildActionPill(),
                   ),
                 ),
@@ -293,8 +298,8 @@ class _BibleReaderState extends State<BibleReader> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children:[
         TextButton(onPressed: () => context.pop(), child: Text(widget.bookName, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00E5FF)))),
-        _glassDropdown("Ch $_currentChapter", chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); _highlightedVerse = null; })),
-        _glassDropdown("V $_currentVerse", verses, (v) {
+        _glassDropdown("అధ్యాయం $_currentChapter", chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); _highlightedVerse = null; })),
+        _glassDropdown("వచనం $_currentVerse", verses, (v) {
           setState(() => _currentVerse = v!);
           _scrollController.scrollTo(index: verses.indexOf(v!) + 1, duration: const Duration(milliseconds: 500));
         }),
