@@ -30,7 +30,7 @@ class _BibleReaderState extends State<BibleReader> {
   
   bool _loading = true;
   bool _isDark = true;
-  double _fontSize = 18.0; // Default size reduced for cleanliness
+  double _fontSize = 18.0; 
   List<String> _bookmarks = [];
   Map<String, int> _verseColors = {};
   Set<String> _selectedVerses = {};
@@ -88,20 +88,18 @@ class _BibleReaderState extends State<BibleReader> {
 
   List<String> _getSortedKeys(Iterable<String> k) => k.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
 
+  // వచనం మీద లాంగ్ ప్రెస్ చేస్తే రిఫరెన్సులు మరియు బుక్‌మార్క్ ఆప్షన్ వస్తుంది
   void _showOptions(String vNum, String vText) async {
     String key = "${widget.bookName}_${_currentChapter}_$vNum";
     bool isBookmarked = _bookmarks.contains(key);
 
-    // Cross Reference Data Fetching
-    final crossData = await _crossService.getReferences(widget.bookName);
-    List refs = [];
-    if (crossData != null) {
-      // JSON లో కీస్ String లా ఉన్నా Integer లా ఉన్నా పనిచేసేలా మార్పు
-      var chapterData = crossData[_currentChapter];
-      if (chapterData != null) {
-        refs = chapterData[vNum] ?? [];
-      }
-    }
+    // 1. వచనం యొక్క Global ID పొందడం
+    int gId = _service.getGlobalId(widget.bookName, _currentChapter, vNum);
+    
+    // 2. ఆ ID ని బట్టి 32 ఫైల్స్ లో వెతికి రిఫరెన్సులు తేవడం
+    List<String> refs = await _crossService.getReferences(gId);
+
+    if (!mounted) return;
 
     showModalBottomSheet(
       context: context,
@@ -139,11 +137,11 @@ class _BibleReaderState extends State<BibleReader> {
                   else
                     ...refs.map((r) {
                       return ListTile(
-                        title: Text(r.toString(), style: TextStyle(color: accentPurple, fontWeight: FontWeight.bold)),
+                        title: Text(r, style: TextStyle(color: accentPurple, fontWeight: FontWeight.bold)),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.white24),
                         onTap: () {
                           Navigator.pop(context);
-                          _navigateToRef(r.toString());
+                          _navigateToRef(r);
                         },
                       );
                     }).toList(),
@@ -157,18 +155,20 @@ class _BibleReaderState extends State<BibleReader> {
   }
 
   void _navigateToRef(String ref) {
+    // FORMAT: "GEN 1 1"
     try {
       List<String> parts = ref.split(' ');
       String bookCode = parts[0];
-      List<String> loc = parts[1].split(':');
-      String chap = loc[0];
-      String verse = loc[1];
+      String chap = parts[1];
+      String verse = parts[2];
+      
       String? telName = _service.engToTelMapping[bookCode];
       if (telName != null) {
+        // కొత్త విండో ఓపెన్ అవుతుంది, వచనం హైలైట్ అవుతుంది
         context.push('/bible-reader/$telName?chapter=$chap&verse=$verse');
       }
     } catch (e) {
-      debugPrint("Nav Error: $e");
+      debugPrint("Ref Navigation Error: $ref");
     }
   }
 
@@ -201,8 +201,8 @@ class _BibleReaderState extends State<BibleReader> {
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 'dark', child: ListTile(leading: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round, color: accentCyan), title: const Text("Theme"))),
-              PopupMenuItem(value: 'in', child: ListTile(leading: const Icon(Icons.zoom_in), title: const Text("Zoom In"))),
-              PopupMenuItem(value: 'out', child: ListTile(leading: const Icon(Icons.zoom_out), title: const Text("Zoom Out"))),
+              const PopupMenuItem(value: 'in', child: ListTile(leading: Icon(Icons.zoom_in), title: Text("Zoom In"))),
+              const PopupMenuItem(value: 'out', child: ListTile(leading: Icon(Icons.zoom_out), title: Text("Zoom Out"))),
             ],
           ),
         ],
@@ -298,10 +298,11 @@ class _BibleReaderState extends State<BibleReader> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children:[
         TextButton(onPressed: () => context.pop(), child: Text(widget.bookName, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00E5FF)))),
-        _glassDropdown("అధ్యాయం $_currentChapter", chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); _highlightedVerse = null; })),
+        _glassDropdown("అధ్యా. $_currentChapter", chapters, (v) => setState(() { _currentChapter = v!; _currentVerse = "1"; _selectedVerses.clear(); _highlightedVerse = null; })),
         _glassDropdown("వచనం $_currentVerse", verses, (v) {
           setState(() => _currentVerse = v!);
-          _scrollController.scrollTo(index: verses.indexOf(v!) + 1, duration: const Duration(milliseconds: 500));
+          int vIndex = verses.indexOf(v!);
+          _scrollController.scrollTo(index: vIndex + 1, duration: const Duration(milliseconds: 500));
         }),
       ],
     );
