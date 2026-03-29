@@ -4,7 +4,7 @@ import 'package:xml/xml.dart';
 class BibleService {
   static Map<String, Map<String, dynamic>>? _bibleCache;
 
-  final List<String> bookNames =[
+  final List<String> bookNames = [
     "ఆదికాండము", "నిర్గమకాండము", "లేవీయకాండము", "సంఖ్యాకాండము", "ద్వితీయోపదేశకాండము",
     "యెహోషువ", "న్యాయాధిపతులు", "రూతు", "1సమూయేలు", "2సమూయేలు",
     "1రాజులు", "2రాజులు", "1దినవృత్తాంతములు", "2దినవృత్తాంతములు", "ఎజ్రా",
@@ -20,59 +20,56 @@ class BibleService {
     "2పేతురు", "1యోహాను", "2యోహాను", "3యోహాను", "యూదా", "ప్రకటన గ్రంథం"
   ];
 
+  // క్రాస్ రిఫరెన్స్ నావిగేషన్ కోసం Mapping
+  final Map<String, String> engToTelMapping = {
+    "Gen": "ఆదికాండము", "Exo": "నిర్గమకాండము", "Lev": "లేవీయకాండము", "Num": "సంఖ్యాకాండము", "Deu": "ద్వితీయోపదేశకాండము",
+    "Jos": "యెహోషువ", "Jud": "న్యాయాధిపతులు", "Rut": "రూతు", "1Sa": "1సమూయేలు", "2Sa": "2సమూయేలు",
+    "1Ki": "1రాజులు", "2Ki": "2రాజులు", "1Ch": "1దినవృత్తాంతములు", "2Ch": "2దినవృత్తాంతములు", "Ezr": "ఎజ్రా",
+    "Neh": "నెహెమ్యా", "Est": "ఎస్తేరు", "Job": "యోబు", "Psa": "కీర్తనలు", "Pro": "సామెతలు",
+    "Ecc": "ప్రసంగి", "Son": "పరమగీతము", "Isa": "యెషయా", "Jer": "యిర్మీయా", "Lam": "విలాపవాక్యములు",
+    "Eze": "యెహెజ్కేలు", "Dan": "దానియేలు", "Hos": "హోషేయ", "Joe": "యోవేలు", "Amo": "ఆమోసు",
+    "Oba": "ఓబద్యా", "Jon": "యోనా", "Mic": "మీకా", "Nah": "నహూము", "Hab": "హబక్కూకు",
+    "Zep": "జెఫన్యా", "Hag": "హగ్గయి", "Zec": "జకర్యా", "Mal": "మలాకీ", "Mat": "మత్తయి",
+    "Mar": "మార్కు", "Luk": "లూకా", "Joh": "యోహాను", "Act": "అపో.కార్యములు", "Rom": "రోమీయులకు",
+    "1Co": "1కొరింథీయులకు", "2Co": "2కొరింథీయులకు", "Gal": "గలతీయులకు", "Eph": "ఎఫెసీయులకు", "Phi": "ఫిలిప్పీయులకు",
+    "Col": "కొలొస్సయులకు", "1Th": "1థెస్సలొనీకయులకు", "2Th": "2థెస్సలొనీకయులకు", "1Ti": "1తిమోతికి", "2Ti": "2తిమోతికి",
+    "Tit": "తీతుకు", "Phm": "ఫిలేమోనుకు", "Heb": "హెబ్రీయులకు", "Jam": "యాకోబు", "1Pe": "1పేతురు",
+    "2Pe": "2పేతురు", "1Jo": "1యోహాను", "2Jo": "2యోహాను", "3Jo": "3యోహాను", "Jud": "యూదా", "Rev": "ప్రకటన గ్రంథం"
+  };
+
   List<String> getOTBooks() => bookNames.sublist(0, 39);
   List<String> getNTBooks() => bookNames.sublist(39);
 
   Future<void> _loadXMLOnce() async {
     if (_bibleCache != null) return;
-    
     try {
       final String rawXml = await rootBundle.loadString('assets/bible.xml');
       final document = XmlDocument.parse(rawXml);
       Map<String, Map<String, dynamic>> tempCache = {};
-      
       for (var bookNode in document.findAllElements('BIBLEBOOK')) {
-        String? bnumber = bookNode.getAttribute('bnumber');
-        if (bnumber == null || bnumber.isEmpty) continue;
-        
+        String bnumber = bookNode.getAttribute('bnumber') ?? "";
         int bIndex = int.parse(bnumber) - 1;
-        if (bIndex < 0 || bIndex >= bookNames.length) continue;
-        
         String teluguBookName = bookNames[bIndex];
         Map<String, dynamic> chaptersMap = {};
-        
         for (var chapterNode in bookNode.findAllElements('CHAPTER')) {
-          String? cnumber = chapterNode.getAttribute('cnumber');
-          if (cnumber == null) continue;
-          
+          String cnumber = chapterNode.getAttribute('cnumber')!;
           Map<String, String> versesMap = {};
           for (var versNode in chapterNode.findAllElements('VERS')) {
-            String? vnumber = versNode.getAttribute('vnumber');
-            if (vnumber != null) {
-              versesMap[vnumber] = versNode.innerText.trim();
-            }
+            versesMap[versNode.getAttribute('vnumber')!] = versNode.innerText.trim();
           }
           chaptersMap[cnumber] = versesMap;
         }
-        
-        tempCache[teluguBookName] = {
-          "name": teluguBookName,
-          "chapters": chaptersMap
-        };
+        tempCache[teluguBookName] = {"name": teluguBookName, "chapters": chaptersMap};
       }
       _bibleCache = tempCache;
     } catch (e) {
-      throw Exception("XML Error: దయచేసి 'assets/bible.xml' ఫైల్ ఉందో లేదో చెక్ చేయండి. \nవివరాలు: $e");
+      throw Exception("XML Error: $e");
     }
   }
 
   Future<Map<String, dynamic>> loadBook(String bookName) async {
     await _loadXMLOnce();
-    if (_bibleCache!.containsKey(bookName)) {
-      return _bibleCache![bookName]!;
-    } else {
-      throw Exception("ఈ పుస్తకం దొరకలేదు: $bookName");
-    }
+    return _bibleCache![bookName] ?? {};
   }
 }
 
