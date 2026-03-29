@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import 'bible_service.dart';
-import 'cross_ref_service.dart'; // కొత్త సర్వీస్
+import 'cross_ref_service.dart';
 
 class BibleReader extends StatefulWidget {
   final String bookName;
@@ -88,12 +88,10 @@ class _BibleReaderState extends State<BibleReader> {
 
   List<String> _getSortedKeys(Iterable<String> k) => k.toList()..sort((a, b) => int.parse(a).compareTo(int.parse(b)));
 
-  // Cross References చూపించే పాపప్
   void _showOptions(String vNum, String vText) async {
     String key = "${widget.bookName}_${_currentChapter}_$vNum";
     bool isBookmarked = _bookmarks.contains(key);
 
-    // JSON నుండి రిఫరెన్సులు తెచ్చుకోవడం
     final crossData = await _crossService.getReferences(widget.bookName);
     List refs = [];
     if (crossData != null && crossData[_currentChapter] != null) {
@@ -118,8 +116,6 @@ class _BibleReaderState extends State<BibleReader> {
             Text("${widget.bookName} $_currentChapter:$vNum", 
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _isDark ? Colors.white : Colors.black)),
             const Divider(height: 30, color: Colors.white10),
-            
-            // రిఫరెన్స్ సెక్షన్
             Expanded(
               child: ListView(
                 children: [
@@ -155,16 +151,13 @@ class _BibleReaderState extends State<BibleReader> {
     );
   }
 
-  // రిఫరెన్స్ నావిగేషన్ లాజిక్
   void _navigateToRef(String ref) {
-    // ఉదాహరణ రిఫరెన్స్: "Joh 1:1"
     try {
       List<String> parts = ref.split(' ');
       String bookCode = parts[0];
       List<String> loc = parts[1].split(':');
       String chap = loc[0];
       String verse = loc[1];
-
       String? telName = _service.engToTelMapping[bookCode];
       if (telName != null) {
         context.push('/bible-reader/$telName?chapter=$chap&verse=$verse');
@@ -181,8 +174,12 @@ class _BibleReaderState extends State<BibleReader> {
     var versesMap = _chapters[_currentChapter] ?? {};
     var sortedVerses = _getSortedKeys(versesMap.keys);
 
+    final Color bgColor = _isDark ? bgDark : const Color(0xFFF9FAFB);
+    // ఇక్కడ whiteEms ని white70 గా ఫిక్స్ చేశాను
+    final Color txtColor = _isDark ? Colors.white70 : Colors.black87;
+
     return Scaffold(
-      backgroundColor: _isDark ? bgDark : const Color(0xFFF9FAFB),
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -200,8 +197,8 @@ class _BibleReaderState extends State<BibleReader> {
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 'dark', child: ListTile(leading: Icon(_isDark ? Icons.wb_sunny : Icons.nightlight_round, color: accentCyan), title: const Text("Theme"))),
-              PopupMenuItem(value: 'in', child: ListTile(leading: const Icon(Icons.zoom_in), title: const Text("Zoom In"))),
-              PopupMenuItem(value: 'out', child: ListTile(leading: const Icon(Icons.zoom_out), title: const Text("Zoom Out"))),
+              const PopupMenuItem(value: 'in', child: ListTile(leading: Icon(Icons.zoom_in), title: Text("Zoom In"))),
+              const PopupMenuItem(value: 'out', child: ListTile(leading: Icon(Icons.zoom_out), title: Text("Zoom Out"))),
             ],
           ),
         ],
@@ -255,7 +252,7 @@ class _BibleReaderState extends State<BibleReader> {
                         padding: const EdgeInsets.only(top: 4, right: 15),
                         child: Text(vNum, style: TextStyle(fontSize: _fontSize * 0.6, fontWeight: FontWeight.w900, color: accentPurple)),
                       ),
-                      Expanded(child: Text(vText, style: TextStyle(fontSize: _fontSize, height: 1.6, color: _isDark ? Colors.whiteEms : Colors.black87))),
+                      Expanded(child: Text(vText, style: TextStyle(fontSize: _fontSize, height: 1.6, color: txtColor))),
                       if (isBookmarked) Padding(padding: const EdgeInsets.only(left: 10), child: Icon(Icons.bookmark, size: 16, color: accentCyan)),
                     ],
                   ),
@@ -310,7 +307,7 @@ class _BibleReaderState extends State<BibleReader> {
       child: DropdownButton<String>(
         hint: Text(title, style: TextStyle(color: _isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 13)),
         dropdownColor: _isDark ? const Color(0xFF161B22) : Colors.white,
-        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: TextStyle(color: _isDark?Colors.white:Colors.black)))).toList(),
         onChanged: onChg,
       ),
     );
