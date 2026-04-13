@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="te" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORLD OF GOD - 1 Chronicles (Ultimate)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@300;400;500;600;700;800&family=Mallanna&family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Sans+Kannada:wght@400;700&family=Noto+Sans+Malayalam:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- DYNAMIC ROOT SCALING --- */
+        :root {
+            --base-size: 16px; 
+        }
+
+        html {
+            font-size: var(--base-size); 
+        }
+
+        /* --- THEME COLORS --- */
+        [data-theme="dark"] {
+            --bg-body: #050508; /* Very dark purple/black tint */
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-main: #e5e5e5;
+            --text-muted: #a3a3a3;
+            --border: rgba(255, 255, 255, 0.1);
+            --gold-text: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            --gold-solid: #d4af37;
+            
+            /* Accents */
+            --c-1: #3b82f6;   /* Blue - Genealogy/History */
+            --c-2: #eab308;   /* Yellow - Gold/Temple prep */
+            --c-3: #22c55e;   /* Green - Restoration */
+            --c-4: #06b6d4;   /* Cyan - Worship */
+            --c-5: #a855f7;   /* Purple - David's Royalty */
+            --c-6: #f97316;   /* Orange - Altar/Sacrifice */
+        }
+
+        [data-theme="light"] {
+            --bg-body: #fdfaf6;
+            --bg-card: #ffffff;
+            --text-main: #271c19;
+            --text-muted: #57534e;
+            --border: #e7e5e4;    
+            --gold-text: linear-gradient(135deg, #b45309, #d97706, #b45309);
+            --gold-solid: #b45309;
+
+            /* Accents (Darker for Light Mode) */
+            --c-1: #1d4ed8;   
+            --c-2: #854d0e;  
+            --c-3: #15803d;  
+            --c-4: #0e7490;    
+            --c-5: #7e22ce;  
+            --c-6: #c2410c;   
+        }
+
+        /* --- GLOBAL STYLES --- */
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        /* Telugu Font Logic */
+        body[lang="te"] .heading-font, body[lang="te"] h1, body[lang="te"] h2, body[lang="te"] h3, body[lang="te"] strong {
+            font-family: 'Anek Telugu', sans-serif !important;
+            font-weight: 700;
+            line-height: 1.5;
+            padding-bottom: 2px;
+        }
+        body[lang="te"] .body-font, body[lang="te"] p, body[lang="te"] li, body[lang="te"] span {
+            font-family: 'Mallanna', sans-serif !important;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+
+        /* Fallbacks */
+        body:not([lang="te"]) { font-family: 'Noto Sans', sans-serif; }
+        body[lang="hi"] { font-family: 'Noto Sans Devanagari', sans-serif; }
+        body[lang="ta"] { font-family: 'Noto Sans Tamil', sans-serif; }
+        body[lang="kn"] { font-family: 'Noto Sans Kannada', sans-serif; }
+        body[lang="ml"] { font-family: 'Noto Sans Malayalam', sans-serif; }
+
+        /* --- UTILITIES --- */
+        .text-gradient-gold {
+            background: var(--gold-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding-bottom: 0.1em;
+        }
+
+        /* --- COMPONENTS --- */
+        .nav-glass {
+            background: rgba(var(--bg-body), 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .base-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem; 
+            transition: transform 0.3s, box-shadow 0.3s;
+            overflow: visible;
+        }
+        .base-card:hover {
+            transform: translateY(-0.3rem);
+            border-color: var(--gold-solid);
+            box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.15);
+        }
+
+        .card-surprise {
+            background: radial-gradient(circle at top right, rgba(168, 85, 247, 0.1), transparent), var(--bg-card);
+            border-left: 0.25rem solid var(--c-5);
+        }
+        .card-christ {
+            background: linear-gradient(to bottom right, rgba(234, 179, 8, 0.05), transparent), var(--bg-card);
+            border-left: 0.25rem solid var(--c-2);
+        }
+        .card-history {
+            background: var(--bg-card);
+            border-left: 0.25rem solid var(--gold-solid);
+        }
+
+        /* 10-Section Layout (Extended for 3 lines) */
+        .section-row {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .section-row:hover {
+            border-color: var(--gold-solid);
+            background: rgba(255,255,255,0.08);
+        }
+        .section-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            opacity: 0.08;
+            position: absolute;
+            right: 1rem;
+            top: 0;
+            line-height: 1;
+        }
+        .section-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            width: fit-content;
+        }
+        .section-row p {
+            /* Ensuring enough vertical spacing to clearly show 3 lines */
+            min-height: 4.5rem;
+        }
+
+        /* Character Grid */
+        .char-card {
+            background: var(--bg-card);
+            border-top: 4px solid transparent;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            transition: 0.3s;
+        }
+        .char-card:hover {
+            background: rgba(255,255,255,0.08);
+            transform: scale(1.02);
+        }
+
+        input[type=range] { accent-color: var(--gold-solid); cursor: pointer; }
+        select { background-color: var(--bg-card); border-color: var(--border); color: var(--text-main); }
+        
+        .text-huge { font-size: 2.5rem; line-height: 1.2; }
+        @media (min-width: 768px) { .text-huge { font-size: 3.5rem; } }
+        
+        .text-big { font-size: 1.5rem; line-height: 1.4; }
+        .text-norm { font-size: 1rem; }
+        
+        /* Author Box */
+        .author-box {
+            background: linear-gradient(to right, rgba(234, 179, 8, 0.1), transparent);
+            border-left: 4px solid var(--c-2);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body lang="te">
+
+    <nav class="sticky top-0 z-50 nav-glass py-3 px-4 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <i data-lucide="music" class="w-8 h-8 text-purple-500 flex-shrink-0"></i>
+                <h1 class="text-xl md:text-2xl font-black tracking-widest text-gradient-gold heading-font whitespace-nowrap">WORLD OF GOD</h1>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4 bg-card px-4 py-2 rounded-full border border-border shadow-sm justify-center">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold">A</span>
+                    <input type="range" id="fontRange" min="14" max="22" value="16" oninput="adjustFont(this.value)" class="w-20 md:w-32">
+                    <span class="text-xl font-bold">A</span>
+                </div>
+                <button onclick="toggleTheme()" class="hover:text-yellow-500 transition p-1">
+                    <i data-lucide="sun-moon" class="w-6 h-6"></i>
+                </button>
+                <select id="langSelect" onchange="setLanguage(this.value)" class="text-sm font-bold border rounded px-2 py-1 outline-none">
+                    <option value="te">తెలుగు</option>
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="ta">தமிழ்</option>
+                    <option value="kn">ಕನ್ನಡ</option>
+                    <option value="ml">മലയാളം</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-12">
+
+        <header class="text-center mb-16 relative">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-600/10 blur-[80px] rounded-full -z-10"></div>
+            <div class="inline-block px-4 py-1 rounded-full border border-yellow-500/50 bg-yellow-500/10 text-yellow-500 text-xs tracking-widest uppercase mb-4 heading-font font-bold">Holy Bible Study</div>
+            <h1 id="bookTitle" class="text-huge font-black mb-6 text-gradient-gold drop-shadow-sm heading-font break-words py-2">1 దినవృత్తాంతములు</h1>
+            <p id="bookSubtitle" class="text-big text-muted opacity-90 font-light tracking-wide body-font break-words">దావీదు వంశావళి & ఆరాధన - సమగ్ర అధ్యయనము</p>
+        </header>
+
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-16">
+            <div class="base-card p-4 text-center">
+                <span id="lbl_author" class="text-xs uppercase text-yellow-600 tracking-widest block heading-font font-bold mb-1">రచయిత</span>
+                <strong id="val_author" class="text-norm block body-font break-words">ఎజ్రా (Ezra)</strong>
+            </div>
+            <div class="base-card p-4 text-center">
+                <span id="lbl_date" class="text-xs uppercase text-yellow-600 tracking-widest block heading-font font-bold mb-1">కాలము</span>
+                <strong id="val_date" class="text-norm block body-font">BC 430</strong>
+            </div>
+            <div class="base-card p-4 text-center">
+                <span id="lbl_place" class="text-xs uppercase text-yellow-600 tracking-widest block heading-font font-bold mb-1">ప్రదేశము</span>
+                <strong id="val_place" class="text-norm block body-font break-words">జెరూసలేం</strong>
+            </div>
+            <div class="base-card p-4 text-center">
+                <span id="lbl_lang" class="text-xs uppercase text-yellow-600 tracking-widest block heading-font font-bold mb-1">భాష</span>
+                <strong id="val_lang" class="text-norm block body-font break-words">హీబ్రూ</strong>
+            </div>
+            <div class="base-card p-4 text-center">
+                <span id="lbl_chapters" class="text-xs uppercase text-yellow-600 tracking-widest block heading-font font-bold mb-1">అధ్యాయాలు</span>
+                <strong id="val_chapters" class="text-norm block body-font">29</strong>
+            </div>
+            <div class="base-card p-4 text-center">
+                <span id="lbl_theme" class="text-xs uppercase text-yellow-600 tracking-widest block heading-font font-bold mb-1">ముఖ్య అంశం</span>
+                <strong id="val_theme" class="text-norm block body-font break-words">ఆరాధన</strong>
+            </div>
+        </div>
+
+        <section class="mb-16">
+            <div class="base-card p-8 md:p-12">
+                <h2 id="intro_title" class="text-big font-bold text-yellow-500 mb-6 heading-font break-words">గ్రంథ పరిచయం</h2>
+                <div id="intro_content" class="text-norm text-justify body-font leading-loose"></div>
+                
+                <div class="author-box">
+                    <h4 id="auth_note_title" class="text-lg font-bold text-yellow-500 heading-font mb-2">చారిత్రక ఉద్దేశ్యం</h4>
+                    <p id="auth_note_text" class="text-sm text-justify body-font opacity-90">బబులోను చెర నుండి తిరిగి వచ్చిన ఇశ్రాయేలీయులకు నిరీక్షణను, ధైర్యాన్ని ఇవ్వడానికి ఈ గ్రంథం వ్రాయబడింది. సమూయేలు మరియు రాజుల గ్రంథాలు వారి పతనానికి గల కారణాలను (పాపం) వివరిస్తే, దినవృత్తాంతముల గ్రంథం వారి ఆత్మీయ మూలాలను, దేవుని నిబంధనను మరియు ఆరాధన ప్రాముఖ్యతను గుర్తుచేస్తుంది.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid md:grid-cols-3 gap-8 mb-16">
+            <div class="base-card card-surprise p-6 flex flex-col">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="p-2 bg-purple-500/10 rounded-lg text-purple-500 flex-shrink-0"><i data-lucide="zap"></i></span>
+                    <h3 id="surprise_title" class="text-big font-bold text-purple-500 heading-font break-words">ఆశ్చర్యకరమైన విషయం</h3>
+                </div>
+                <p id="surprise_text" class="text-norm body-font text-justify leading-relaxed">Loading...</p>
+            </div>
+            <div class="base-card card-christ p-6 flex flex-col">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="p-2 bg-yellow-500/10 rounded-lg text-yellow-500 flex-shrink-0"><i data-lucide="cross"></i></span>
+                    <h3 id="christ_title" class="text-big font-bold text-yellow-500 heading-font break-words">క్రీస్తు ఛాయలు</h3>
+                </div>
+                <p id="christ_text" class="text-norm body-font text-justify leading-relaxed">Loading...</p>
+            </div>
+            <div class="base-card card-history p-6 flex flex-col">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="p-2 bg-cyan-500/10 rounded-lg text-cyan-500 flex-shrink-0"><i data-lucide="scroll-text"></i></span>
+                    <h3 id="history_title" class="text-big font-bold text-cyan-500 heading-font break-words">చారిత్రక ఆధారాలు</h3>
+                </div>
+                <p id="history_text" class="text-norm body-font text-justify leading-relaxed">Loading...</p>
+            </div>
+        </div>
+
+        <section class="mb-16">
+            <div class="text-center mb-10">
+                <h2 id="chars_title" class="text-big font-bold text-gradient-gold heading-font tracking-widest uppercase inline-block border-b-2 border-yellow-500/30 pb-2 break-words">ముఖ్య పాత్రలు</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="char-card border-t-purple-500">
+                    <strong id="ch1_t" class="block text-big mb-2 heading-font text-purple-500 break-words">దావీదు</strong>
+                    <span id="ch1_d" class="body-font opacity-80 text-norm break-words">దేవుని హృదయానుసారుడు</span>
+                </div>
+                <div class="char-card border-t-red-500">
+                    <strong id="ch2_t" class="block text-big mb-2 heading-font text-red-500 break-words">సౌలు</strong>
+                    <span id="ch2_d" class="body-font opacity-80 text-norm break-words">అవిధేయతకు ఉదాహరణ</span>
+                </div>
+                <div class="char-card border-t-yellow-500">
+                    <strong id="ch3_t" class="block text-big mb-2 heading-font text-yellow-500 break-words">సొలొమోను</strong>
+                    <span id="ch3_d" class="body-font opacity-80 text-norm break-words">ఆలయ నిర్మాతగా ఎంపిక</span>
+                </div>
+                <div class="char-card border-t-cyan-500">
+                    <strong id="ch4_t" class="block text-big mb-2 heading-font text-cyan-500 break-words">ఆసాపు & హేమాను</strong>
+                    <span id="ch4_d" class="body-font opacity-80 text-norm break-words">ఆరాధన నాయకులు</span>
+                </div>
+                <div class="char-card border-t-green-500">
+                    <strong id="ch5_t" class="block text-big mb-2 heading-font text-green-500 break-words">గాదు & నాతాను</strong>
+                    <span id="ch5_d" class="body-font opacity-80 text-norm break-words">దేవుని ప్రవక్తలు</span>
+                </div>
+                <div class="char-card border-t-orange-500">
+                    <strong id="ch6_t" class="block text-big mb-2 heading-font text-orange-500 break-words">ఉజ్జా</strong>
+                    <span id="ch6_d" class="body-font opacity-80 text-norm break-words">మందసాన్ని తాకినవాడు</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <div class="text-center mb-10">
+                <h2 id="cats_title" class="text-big font-bold text-gradient-gold heading-font tracking-widest uppercase inline-block border-b-2 border-yellow-500/30 pb-2 break-words">10 వర్గాల విశ్లేషణ</h2>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="section-row border-l-4" style="border-left-color: var(--c-1);">
+                    <div class="section-number">01</div>
+                    <span class="section-badge bg-blue-500/20 text-blue-500" id="cat1_range">అధ్యాయాలు 1-3</span>
+                    <h3 class="text-xl font-bold heading-font text-blue-500" id="cat1_t">ఆదాము నుండి దావీదు వరకు</h3>
+                    <p class="body-font text-justify opacity-90" id="cat1_d">మానవ చరిత్ర ఆరంభమైన ఆదాము నుండి దావీదు రాజు వరకు ఉన్న వంశావళిని ఈ అధ్యాయాలు వివరంగా తెలియజేస్తాయి. దేవుడు తన ప్రజలను, ముఖ్యంగా మెస్సీయ రాబోయే దావీదు వంశాన్ని ఎలా భద్రపరిచాడో ఇది స్పష్టం చేస్తుంది. చెర నుండి తిరిగి వచ్చిన ప్రజలకు వారి చారిత్రక మూలాలను గుర్తుచేసి నిరీక్షణను నింపేందుకే ఈ సుదీర్ఘమైన జాబితా రాయబడింది.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-4);">
+                    <div class="section-number">02</div>
+                    <span class="section-badge bg-cyan-500/20 text-cyan-500" id="cat2_range">అధ్యాయాలు 4-9</span>
+                    <h3 class="text-xl font-bold heading-font text-cyan-500" id="cat2_t">ఇతర గోత్రాల వంశావళి</h3>
+                    <p class="body-font text-justify opacity-90" id="cat2_d">యూదా గోత్రంతో పాటు ఇశ్రాయేలులోని మిగిలిన గోత్రాలైన షిమ్యోను, రూబేను, గాదు మొదలైన వారి వంశ చరిత్రను ఈ భాగం పొందుపరుస్తుంది. అలాగే, యాజకులైన లేవీయుల విధులను, యెరూషలేములో నివసించిన వారి పేర్లను కూడా ఇక్కడ ప్రత్యేకంగా ప్రస్తావించారు. దేవుని దృష్టిలో ప్రతి వ్యక్తికి, ప్రతి గోత్రానికి ఒక ప్రత్యేకమైన ఉద్దేశం మరియు గుర్తింపు ఉన్నాయని ఇది తెలియజేస్తుంది.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-1);">
+                    <div class="section-number">03</div>
+                    <span class="section-badge bg-red-500/20 text-red-500" id="cat3_range">అధ్యాయం 10</span>
+                    <h3 class="text-xl font-bold heading-font text-red-500" id="cat3_t">సౌలు మరణం</h3>
+                    <p class="body-font text-justify opacity-90" id="cat3_d">ఇశ్రాయేలు మొదటి రాజైన సౌలు దేవుని పట్ల అవిధేయత చూపడం వల్ల అతని జీవితం ఎంత విషాదకరంగా ముగిసిందో ఈ అధ్యాయం వివరిస్తుంది. అతడు దేవుని మాట వినకపోవడమే కాకుండా, సోదెకత్తెను ఆశ్రయించి తన పతనాన్ని తానే కొనితెచ్చుకున్నాడు. దేవుని ఆజ్ఞలను మీరిన వారి అంతం ఎలా ఉంటుందో రాబోయే తరాలకు ఒక హెచ్చరికగా ఈ సంఘటన రాయబడింది.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-5);">
+                    <div class="section-number">04</div>
+                    <span class="section-badge bg-purple-500/20 text-purple-500" id="cat4_range">అధ్యాయాలు 11-12</span>
+                    <h3 class="text-xl font-bold heading-font text-purple-500" id="cat4_t">దావీదు పట్టాభిషేకం</h3>
+                    <p class="body-font text-justify opacity-90" id="cat4_d">సౌలు మరణానంతరం ఇశ్రాయేలు పెద్దలందరూ హెబ్రోనుకు వచ్చి దావీదును తమకు రాజుగా ఏకగ్రీవంగా ఎన్నుకుని పట్టాభిషేకం చేశారు. దావీదు యెబూసీయులను ఓడించి యెరూషలేమును జయించి, దానికి 'దావీదు పురము' అని పేరు పెట్టాడు. ఈ సమయంలో అతనికి అండగా నిలిచిన పరాక్రమశాలుల, సైన్యాధిపతుల వీరకార్యాలను ఇక్కడ ఎంతో గొప్పగా వర్ణించారు.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-6);">
+                    <div class="section-number">05</div>
+                    <span class="section-badge bg-orange-500/20 text-orange-500" id="cat5_range">అధ్యాయాలు 13-16</span>
+                    <h3 class="text-xl font-bold heading-font text-orange-500" id="cat5_t">మందసం తరలింపు</h3>
+                    <p class="body-font text-justify opacity-90" id="cat5_d">దావీదు దేవుని నిబంధన మందసాన్ని యెరూషలేముకు తీసుకురావాలని ప్రయత్నించి, దేవుని పద్ధతి పాటించకపోవడం వల్ల ఉజ్జా మరణిస్తాడు. తరువాత యాజకుల ద్వారా భక్తిశ్రద్ధలతో, సంగీత వాయిద్యాలతో, మహా ఆనందంతో మందసాన్ని సీయోనుకు తీసుకువస్తాడు. దేవుని ఆరాధనలో ఉత్సాహంతో పాటు దేవుని నియమాలకు లోబడే పవిత్రత కూడా ఎంతో అవసరమని ఇది నేర్పుతుంది.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-4);">
+                    <div class="section-number">06</div>
+                    <span class="section-badge bg-cyan-600/20 text-cyan-600" id="cat6_range">అధ్యాయం 17</span>
+                    <h3 class="text-xl font-bold heading-font text-cyan-600" id="cat6_t">దావీదు నిబంధన</h3>
+                    <p class="body-font text-justify opacity-90" id="cat6_d">దావీదు దేవునికి ఒక శాశ్వతమైన దేవాలయం కట్టాలని ఆశపడగా, దేవుడు నాతాను ప్రవక్త ద్వారా ఆ పనిని దావీదు కుమారుడు సొలొమోను చేస్తాడని చెబుతాడు. అయితే, దేవుడు దావీదుతో శాశ్వత నిబంధన చేసి, అతని సింహాసనం నిత్యము నిలుస్తుందని వాగ్దానం చేస్తాడు. ఈ అద్భుతమైన వాగ్దానమే భవిష్యత్తులో యేసు క్రీస్తు ద్వారా సంపూర్ణంగా నెరవేర్చబడి మనకు రక్షణ తెచ్చింది.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-3);">
+                    <div class="section-number">07</div>
+                    <span class="section-badge bg-green-500/20 text-green-500" id="cat7_range">అధ్యాయాలు 18-20</span>
+                    <h3 class="text-xl font-bold heading-font text-green-500" id="cat7_t">దావీదు సైనిక విజయాలు</h3>
+                    <p class="body-font text-justify opacity-90" id="cat7_d">దేవుని తోడు వల్ల దావీదు ఫిలిష్తీయులను, మోయాబీయులను, సిరియనులను మరియు అమ్మోనీయులను ఓడించి గొప్ప విజయాలు సాధించాడు. తన చుట్టుపక్కల ఉన్న శత్రువులందరినీ అణచివేసి, రాజ్యాన్ని ఎంతో విస్తరించి, దానికి సంపూర్ణమైన శాంతిభద్రతలను తీసుకువచ్చాడు. దేవునిపై ఆధారపడే నాయకుడికి దేవుడు ఎలాంటి ఘనమైన విజయాన్ని అనుగ్రహిస్తాడో ఈ అధ్యాయాలు సాక్ష్యమిస్తున్నాయి.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-1);">
+                    <div class="section-number">08</div>
+                    <span class="section-badge bg-red-600/20 text-red-600" id="cat8_range">అధ్యాయం 21</span>
+                    <h3 class="text-xl font-bold heading-font text-red-600" id="cat8_t">జనాభా లెక్కలు & శిక్ష</h3>
+                    <p class="body-font text-justify opacity-90" id="cat8_d">దావీదు అపవాది ప్రేరణ వల్ల అహంకారంతో సైన్యాన్ని లెక్కించి దేవుని దృష్టికి మహా పాపం చేస్తాడు, ఫలితంగా ఇశ్రాయేలులో తెగులు ప్రబలుతుంది. దావీదు కన్నీటితో పశ్చాత్తాపపడి, అరౌనా కళ్లమును వెల ఇచ్చి కొని అక్కడ దేవునికి బలిపీఠం కట్టి ప్రాయశ్చిత్తం చేస్తాడు. ఈ స్థలమే తదనంతరం సొలొమోను కట్టబోయే మహా దేవాలయానికి పునాదిగా, దేవుని కృపకు నిలయంగా మారుతుంది.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-2);">
+                    <div class="section-number">09</div>
+                    <span class="section-badge bg-yellow-500/20 text-yellow-500" id="cat9_range">అధ్యాయాలు 22-26</span>
+                    <h3 class="text-xl font-bold heading-font text-yellow-500" id="cat9_t">ఆలయానికి సిద్ధపాటు</h3>
+                    <p class="body-font text-justify opacity-90" id="cat9_d">దావీదు తాను ఆలయం కట్టకపోయినా, తన కుమారుడైన సొలొమోను కట్టబోయే ఆ మందిరానికి కావలసిన బంగారం, వెండి, రాళ్లను అపారంగా సమకూరుస్తాడు. అలాగే ఆరాధన కోసం లేవీయులను, యాజకులను, గాయకులను, ద్వారపాలకులను వంతుల వారీగా క్రమబద్ధీకరిస్తాడు. దేవుని పని కోసం ముందుచూపుతో ఎంతగానో సిద్ధపడటం భవిష్యత్ తరాలకు ఒక గొప్ప ఆత్మీయ ఆదర్శంగా నిలిచిపోతుంది.</p>
+                </div>
+
+                <div class="section-row border-l-4" style="border-left-color: var(--c-5);">
+                    <div class="section-number">10</div>
+                    <span class="section-badge bg-purple-600/20 text-purple-600" id="cat10_range">అధ్యాయాలు 27-29</span>
+                    <h3 class="text-xl font-bold heading-font text-purple-600" id="cat10_t">దావీదు చివరి మాటలు</h3>
+                    <p class="body-font text-justify opacity-90" id="cat10_d">దావీదు తన జీవిత చరమాంకంలో ఇశ్రాయేలు నాయకులందరినీ పిలిచి సొలొమోనును రాజుగా ప్రకటించి, ఆలయ నిర్మాణ బాధ్యతను అప్పగిస్తాడు. ప్రజలందరూ దేవుని పని కొరకు సంతోషంగా కానుకలు సమర్పించినప్పుడు దావీదు దేవునిని గొప్పగా స్తుతించి ఘనపరుస్తాడు. చివరకు దావీదు సంపూర్ణ ఆయుష్షు, కీర్తి, ఐశ్వర్యము అనుభవించి మరణించగా, సొలొమోను సింహాసనం అధిష్టిస్తాడు.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-12 text-center mt-12 border-t border-border bg-body">
+        <h3 class="text-yellow-500 font-bold text-big tracking-widest heading-font">WORLD OF GOD</h3>
+        <p class="text-muted text-small mt-2">© 2026. Premium Bible Study.</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        const root = document.documentElement;
+
+        const content = {
+            te: {
+                bookTitle: "1 దినవృత్తాంతములు", bookSubtitle: "దావీదు వంశావళి & ఆరాధన - సమగ్ర అధ్యయనము",
+                lbl_author: "రచయిత", val_author: "ఎజ్రా (Ezra)",
+                lbl_date: "కాలము", val_date: "క్రీ.పూ. 430",
+                lbl_place: "ప్రదేశము", val_place: "జెరూసలేం",
+                lbl_lang: "భాష", val_lang: "హీబ్రూ",
+                lbl_chapters: "అధ్యాయాలు", val_chapters: "29",
+                lbl_theme: "ముఖ్య అంశం", val_theme: "ఆరాధన",
+                intro_title: "గ్రంథ పరిచయం",
+                intro_content: "<p>1 దినవృత్తాంతములు (1 Chronicles) గ్రంథం సమూయేలు మరియు రాజుల గ్రంథాలలోని చరిత్రనే మళ్ళీ చెబుతుంది, కానీ ఒక కొత్త ఆత్మీయ దృక్కోణంతో. ఇది దావీదు మహారాజు యొక్క విజయాలపై, ముఖ్యంగా దేవుని ఆలయానికి అతను చేసిన సిద్ధపాటుపై మరియు ఆరాధన క్రమంపై ఎక్కువ దృష్టి పెడుతుంది. చెర నుండి తిరిగి వచ్చిన ప్రజలకు దేవుని నిబంధనను గుర్తుచేయడానికి ఇది వ్రాయబడింది.</p>",
+                auth_note_title: "చారిత్రక ఉద్దేశ్యం",
+                auth_note_text: "బబులోను చెర నుండి తిరిగి వచ్చిన ఇశ్రాయేలీయులకు నిరీక్షణను, ధైర్యాన్ని ఇవ్వడానికి ఈ గ్రంథం వ్రాయబడింది. సమూయేలు మరియు రాజుల గ్రంథాలు వారి పతనానికి గల కారణాలను (పాపం) వివరిస్తే, దినవృత్తాంతముల గ్రంథం వారి ఆత్మీయ మూలాలను, దేవుని నిబంధనను మరియు ఆరాధన ప్రాముఖ్యతను గుర్తుచేస్తుంది.",
+                surprise_title: "ఆశ్చర్యకరమైన విషయం",
+                surprise_text: "బైబిలులో అత్యంత పొడవైన వంశావళి (Genealogy) ఈ గ్రంథం మొదటి 9 అధ్యాయాలలోనే ఉంది. ఇది ఆదాముతో మొదలై బబులోను చెర నుండి తిరిగి వచ్చిన వారి వరకు సాగుతుంది. ఇది దేవుని వాగ్దానాలు తరతరాలుగా ఎలా నిలబడతాయో నిరూపించే చారిత్రక సాక్ష్యం.",
+                christ_title: "క్రీస్తు ఛాయలు",
+                christ_text: "ఈ గ్రంథంలో దావీదు యొక్క పాపాలు (బత్షెబతో పాపం, కుటుంబ కలహాలు) వదిలివేయబడ్డాయి. బదులుగా అతని రాజరికపు వైభవం, ఆలయ భక్తి హైలైట్ చేయబడ్డాయి. ఇది రాబోయే పరిపూర్ణమైన, పాపరహితుడైన రాజును అనగా యేసు క్రీస్తును, ఆయన నిత్య రాజ్యాన్ని సూచిస్తుంది.",
+                history_title: "చారిత్రక ఆధారాలు",
+                history_text: "ఈ గ్రంథంలో వాడబడిన అనేక పేర్లు, ప్రదేశాలు మరియు వంశావళి వివరాలు పురావస్తు శాస్త్రవేత్తలు కనుగొన్న ఇతర మధ్యప్రాచ్య దస్త్రాలతో సరిపోలుతున్నాయి. చెర తర్వాత కాలం (Post-exilic) నాటి భాషా శైలి కూడా ఇందులో స్పష్టంగా కనిపిస్తుంది.",
+                chars_title: "ముఖ్య పాత్రలు",
+                ch1_t: "దావీదు", ch1_d: "దేవుని హృదయానుసారుడు",
+                ch2_t: "సౌలు", ch2_d: "అవిధేయతకు ఉదాహరణ",
+                ch3_t: "సొలొమోను", ch3_d: "ఆలయ నిర్మాతగా ఎంపిక",
+                ch4_t: "ఆసాపు & హేమాను", ch4_d: "ఆరాధన నాయకులు",
+                ch5_t: "గాదు & నాతాను", ch5_d: "దేవుని ప్రవక్తలు",
+                ch6_t: "ఉజ్జా", ch6_d: "మందసాన్ని తాకినవాడు",
+                cats_title: "10 వర్గాల విశ్లేషణ",
+                cat1_t: "ఆదాము నుండి దావీదు వరకు", cat1_d: "మానవ చరిత్ర ఆరంభమైన ఆదాము నుండి దావీదు రాజు వరకు ఉన్న వంశావళిని ఈ అధ్యాయాలు వివరంగా తెలియజేస్తాయి. దేవుడు తన ప్రజలను, ముఖ్యంగా మెస్సీయ రాబోయే దావీదు వంశాన్ని ఎలా భద్రపరిచాడో ఇది స్పష్టం చేస్తుంది. చెర నుండి తిరిగి వచ్చిన ప్రజలకు వారి చారిత్రక మూలాలను గుర్తుచేసి నిరీక్షణను నింపేందుకే ఈ సుదీర్ఘమైన జాబితా రాయబడింది.",
+                cat2_t: "ఇతర గోత్రాల వంశావళి", cat2_d: "యూదా గోత్రంతో పాటు ఇశ్రాయేలులోని మిగిలిన గోత్రాలైన షిమ్యోను, రూబేను, గాదు మొదలైన వారి వంశ చరిత్రను ఈ భాగం పొందుపరుస్తుంది. అలాగే, యాజకులైన లేవీయుల విధులను, యెరూషలేములో నివసించిన వారి పేర్లను కూడా ఇక్కడ ప్రత్యేకంగా ప్రస్తావించారు. దేవుని దృష్టిలో ప్రతి వ్యక్తికి, ప్రతి గోత్రానికి ఒక ప్రత్యేకమైన ఉద్దేశం మరియు గుర్తింపు ఉన్నాయని ఇది తెలియజేస్తుంది.",
+                cat3_t: "సౌలు మరణం", cat3_d: "ఇశ్రాయేలు మొదటి రాజైన సౌలు దేవుని పట్ల అవిధేయత చూపడం వల్ల అతని జీవితం ఎంత విషాదకరంగా ముగిసిందో ఈ అధ్యాయం వివరిస్తుంది. అతడు దేవుని మాట వినకపోవడమే కాకుండా, సోదెకత్తెను ఆశ్రయించి తన పతనాన్ని తానే కొనితెచ్చుకున్నాడు. దేవుని ఆజ్ఞలను మీరిన వారి అంతం ఎలా ఉంటుందో రాబోయే తరాలకు ఒక హెచ్చరికగా ఈ సంఘటన రాయబడింది.",
+                cat4_t: "దావీదు పట్టాభిషేకం", cat4_d: "సౌలు మరణానంతరం ఇశ్రాయేలు పెద్దలందరూ హెబ్రోనుకు వచ్చి దావీదును తమకు రాజుగా ఏకగ్రీవంగా ఎన్నుకుని పట్టాభిషేకం చేశారు. దావీదు యెబూసీయులను ఓడించి యెరూషలేమును జయించి, దానికి 'దావీదు పురము' అని పేరు పెట్టాడు. ఈ సమయంలో అతనికి అండగా నిలిచిన పరాక్రమశాలుల, సైన్యాధిపతుల వీరకార్యాలను ఇక్కడ ఎంతో గొప్పగా వర్ణించారు.",
+                cat5_t: "మందసం తరలింపు", cat5_d: "దావీదు దేవుని నిబంధన మందసాన్ని యెరూషలేముకు తీసుకురావాలని ప్రయత్నించి, దేవుని పద్ధతి పాటించకపోవడం వల్ల ఉజ్జా మరణిస్తాడు. తరువాత యాజకుల ద్వారా భక్తిశ్రద్ధలతో, సంగీత వాయిద్యాలతో, మహా ఆనందంతో మందసాన్ని సీయోనుకు తీసుకువస్తాడు. దేవుని ఆరాధనలో ఉత్సాహంతో పాటు దేవుని నియమాలకు లోబడే పవిత్రత కూడా ఎంతో అవసరమని ఇది నేర్పుతుంది.",
+                cat6_t: "దావీదు నిబంధన", cat6_d: "దావీదు దేవునికి ఒక శాశ్వతమైన దేవాలయం కట్టాలని ఆశపడగా, దేవుడు నాతాను ప్రవక్త ద్వారా ఆ పనిని దావీదు కుమారుడు సొలొమోను చేస్తాడని చెబుతాడు. అయితే, దేవుడు దావీదుతో శాశ్వత నిబంధన చేసి, అతని సింహాసనం నిత్యము నిలుస్తుందని వాగ్దానం చేస్తాడు. ఈ అద్భుతమైన వాగ్దానమే భవిష్యత్తులో యేసు క్రీస్తు ద్వారా సంపూర్ణంగా నెరవేర్చబడి మనకు రక్షణ తెచ్చింది.",
+                cat7_t: "దావీదు సైనిక విజయాలు", cat7_d: "దేవుని తోడు వల్ల దావీదు ఫిలిష్తీయులను, మోయాబీయులను, సిరియనులను మరియు అమ్మోనీయులను ఓడించి గొప్ప విజయాలు సాధించాడు. తన చుట్టుపక్కల ఉన్న శత్రువులందరినీ అణచివేసి, రాజ్యాన్ని ఎంతో విస్తరించి, దానికి సంపూర్ణమైన శాంతిభద్రతలను తీసుకువచ్చాడు. దేవునిపై ఆధారపడే నాయకుడికి దేవుడు ఎలాంటి ఘనమైన విజయాన్ని అనుగ్రహిస్తాడో ఈ అధ్యాయాలు సాక్ష్యమిస్తున్నాయి.",
+                cat8_t: "జనాభా లెక్కలు & శిక్ష", cat8_d: "దావీదు అపవాది ప్రేరణ వల్ల అహంకారంతో సైన్యాన్ని లెక్కించి దేవుని దృష్టికి మహా పాపం చేస్తాడు, ఫలితంగా ఇశ్రాయేలులో తెగులు ప్రబలుతుంది. దావీదు కన్నీటితో పశ్చాత్తాపపడి, అరౌనా కళ్లమును వెల ఇచ్చి కొని అక్కడ దేవునికి బలిపీఠం కట్టి ప్రాయశ్చిత్తం చేస్తాడు. ఈ స్థలమే తదనంతరం సొలొమోను కట్టబోయే మహా దేవాలయానికి పునాదిగా, దేవుని కృపకు నిలయంగా మారుతుంది.",
+                cat9_t: "ఆలయానికి సిద్ధపాటు", cat9_d: "దావీదు తాను ఆలయం కట్టకపోయినా, తన కుమారుడైన సొలొమోను కట్టబోయే ఆ మందిరానికి కావలసిన బంగారం, వెండి, రాళ్లను అపారంగా సమకూరుస్తాడు. అలాగే ఆరాధన కోసం లేవీయులను, యాజకులను, గాయకులను, ద్వారపాలకులను వంతుల వారీగా క్రమబద్ధీకరిస్తాడు. దేవుని పని కోసం ముందుచూపుతో ఎంతగానో సిద్ధపడటం భవిష్యత్ తరాలకు ఒక గొప్ప ఆత్మీయ ఆదర్శంగా నిలిచిపోతుంది.",
+                cat10_t: "దావీదు చివరి మాటలు", cat10_d: "దావీదు తన జీవిత చరమాంకంలో ఇశ్రాయేలు నాయకులందరినీ పిలిచి సొలొమోనును రాజుగా ప్రకటించి, ఆలయ నిర్మాణ బాధ్యతను అప్పగిస్తాడు. ప్రజలందరూ దేవుని పని కొరకు సంతోషంగా కానుకలు సమర్పించినప్పుడు దావీదు దేవునిని గొప్పగా స్తుతించి ఘనపరుస్తాడు. చివరకు దావీదు సంపూర్ణ ఆయుష్షు, కీర్తి, ఐశ్వర్యము అనుభవించి మరణించగా, సొలొమోను సింహాసనం అధిష్టిస్తాడు."
+            },
+            en: {
+                bookTitle: "1 CHRONICLES", bookSubtitle: "Genealogy & Worship - Comprehensive Study",
+                lbl_author: "Author", val_author: "Ezra (Tradition)",
+                lbl_date: "Date", val_date: "430 BC",
+                lbl_place: "Place", val_place: "Jerusalem",
+                lbl_lang: "Language", val_lang: "Hebrew",
+                lbl_chapters: "Chapters", val_chapters: "29",
+                lbl_theme: "Theme", val_theme: "Worship/Covenant",
+                intro_title: "Introduction",
+                intro_content: "<p>1 Chronicles retells the history found in Samuel and Kings, but from a priestly and spiritual perspective. It was written to the Jews returning from Babylonian exile to remind them of their spiritual heritage, the importance of Temple worship, and God's enduring covenant with the house of David.</p>",
+                auth_note_title: "Historical Purpose",
+                auth_note_text: "While Samuel and Kings explain why the nation fell into exile (due to sin), Chronicles was written post-exile to provide hope. It focuses on the positive aspects of David's reign, the preparation for the Temple, and the unbroken line of God's chosen people to encourage the returning remnant.",
+                surprise_title: "Surprising Fact",
+                surprise_text: "The first 9 chapters comprise the longest continuous genealogy in the Bible. While it may seem tedious to modern readers, to the returning exiles, this list was proof of their identity and God's unbroken promise stretching all the way back to Adam.",
+                christ_title: "Shadows of Christ",
+                christ_text: "Chronicles omits David's moral failures (like Bathsheba) to present him as an idealized king. This idealized David points directly to the ultimate, sinless King of Kings, Jesus Christ, who perfectly fulfills the Davidic Covenant and builds the true Temple (the Church).",
+                history_title: "Historical Evidence",
+                history_text: "The extensive use of official records, census lists, and specific familial lineages strongly aligns with the Persian period's administrative practices. The post-exilic Hebrew vocabulary used in the book further authenticates its dating and historical context.",
+                chars_title: "Key Characters",
+                ch1_t: "David", ch1_d: "A man after God's own heart.",
+                ch2_t: "Saul", ch2_d: "An example of tragic disobedience.",
+                ch3_t: "Solomon", ch3_d: "The chosen builder of the Temple.",
+                ch4_t: "Asaph & Heman", ch4_d: "Appointed leaders of worship.",
+                ch5_t: "Gad & Nathan", ch5_d: "Prophets who guided the King.",
+                ch6_t: "Uzzah", ch6_d: "Struck dead for touching the Ark.",
+                cats_title: "10 Section Analysis",
+                cat1_t: "From Adam to David", cat1_d: "These chapters detail the genealogy from Adam, the beginning of human history, to King David. It clearly shows how God preserved His people, especially the royal line of David from which the Messiah would come. This long list was written to remind the returning exiles of their historical roots and to fill them with hope.",
+                cat2_t: "Genealogies of Other Tribes", cat2_d: "This section includes the family histories of the remaining tribes of Israel, such as Simeon, Reuben, and Gad, alongside Judah. It also specifically mentions the duties of the Levite priests and the names of those who lived in Jerusalem. It conveys that in God's eyes, every individual and tribe has a unique purpose and identity.",
+                cat3_t: "The Death of Saul", cat3_d: "This chapter explains how tragically the life of Saul, the first king of Israel, ended due to his disobedience to God. Not only did he disobey God's word, but he also consulted a medium, bringing about his own downfall. This event is recorded as a warning to future generations about the fate of those who break God's commands.",
+                cat4_t: "David's Coronation", cat4_d: "After Saul's death, all the elders of Israel came to Hebron and unanimously elected and crowned David as their king. David defeated the Jebusites, conquered Jerusalem, and named it the 'City of David'. The heroic deeds of his mighty warriors and commanders who supported him during this time are grandly described here.",
+                cat5_t: "Moving the Ark", cat5_d: "David attempts to bring the Ark of the Covenant to Jerusalem, but Uzzah dies because they did not follow God's prescribed method. Later, the Ark is brought to Zion by the priests with reverence, musical instruments, and great joy. This teaches that while enthusiasm in worship is good, holiness and obedience to God's rules are absolutely essential.",
+                cat6_t: "The Davidic Covenant", cat6_d: "When David desires to build a permanent temple for God, God tells him through the prophet Nathan that his son Solomon will do the work. However, God makes an everlasting covenant with David, promising that his throne will endure forever. This wonderful promise was ultimately fulfilled perfectly in the future through Jesus Christ, bringing us salvation.",
+                cat7_t: "David's Military Victories", cat7_d: "With God's presence, David achieved great victories by defeating the Philistines, Moabites, Arameans, and Ammonites. He subdued all his surrounding enemies, vastly expanded his kingdom, and brought complete peace and security to it. These chapters testify to the glorious victories God grants to a leader who relies entirely on Him.",
+                cat8_t: "Census & Punishment", cat8_d: "Instigated by Satan, David pridefully counts his army, committing a great sin in God's sight, which results in a plague upon Israel. David tearfully repents, buys the threshing floor of Araunah at a price, and builds an altar to make atonement. This very site later becomes the foundation for the great Temple built by Solomon, a place of God's grace.",
+                cat9_t: "Preparations for the Temple", cat9_d: "Although David does not build the temple himself, he gathers immense quantities of gold, silver, and stones for the sanctuary his son Solomon will build. He also systematically organizes the Levites, priests, singers, and gatekeepers into divisions for worship. Such tremendous foresight and preparation for God's work remains a great spiritual example for future generations.",
+                cat10_t: "David's Final Words", cat10_d: "In the twilight of his life, David summons all the leaders of Israel, proclaims Solomon as king, and entrusts him with the temple construction. When the people joyfully offer their gifts for God's work, David praises and exalts God magnificently. Finally, after enjoying a full life of age, wealth, and honor, David dies, and Solomon ascends the throne."
+            },
+            hi: {
+                bookTitle: "1 इतिहास", bookSubtitle: "दाऊद की वंशावली और आराधना - व्यापक अध्ययन",
+                lbl_author: "लेखक", val_author: "एज्रा (परंपरा)",
+                lbl_date: "तिथि", val_date: "430 ईसा पूर्व",
+                lbl_place: "स्थान", val_place: "यरूशलेम",
+                lbl_lang: "भाषा", val_lang: "हिब्रू",
+                lbl_chapters: "अध्याय", val_chapters: "29",
+                lbl_theme: "विषय", val_theme: "आराधना",
+                intro_title: "परिचय",
+                intro_content: "<p>1 इतिहास शमूएल और राजाओं में पाए गए इतिहास को फिर से बताता है, लेकिन एक याजकीय और आध्यात्मिक दृष्टिकोण से। यह दाऊद के शासनकाल, मंदिर की तैयारी और आराधना के महत्व पर केंद्रित है।</p>",
+                auth_note_title: "ऐतिहासिक उद्देश्य",
+                auth_note_text: "जबकि शमूएल और राजा बताते हैं कि राष्ट्र निर्वासन में क्यों गिरा (पाप के कारण), इतिहास निर्वासन के बाद आशा प्रदान करने के लिए लिखा गया था। यह लोगों को उनके आध्यात्मिक मूल की याद दिलाता है।",
+                surprise_title: "आश्चर्यजनक तथ्य",
+                surprise_text: "पहले 9 अध्याय बाइबिल में सबसे लंबी निरंतर वंशावली हैं। निर्वासन से लौटने वाले यहूदियों के लिए, यह सूची उनकी पहचान और परमेश्वर के अटूट वादे का प्रमाण थी।",
+                christ_title: "मसीह की छाया",
+                christ_text: "इतिहास दाऊद की नैतिक विफलताओं को छोड़ देता है ताकि उसे एक आदर्श राजा के रूप में प्रस्तुत किया जा सके। यह आदर्श दाऊद राजाओं के राजा, यीशु मसीह की ओर इशारा करता है।",
+                history_title: "ऐतिहासिक प्रमाण",
+                history_text: "आधिकारिक अभिलेखों और वंशावली का व्यापक उपयोग फ़ारसी काल की प्रशासनिक प्रथाओं के साथ दृढ़ता से मेल खाता है।",
+                chars_title: "प्रमुख पात्र",
+                ch1_t: "दाऊद", ch1_d: "परमेश्वर के हृदय के अनुसार राजा।",
+                ch2_t: "शाऊल", ch2_d: "अविधेयता का दुखद उदाहरण।",
+                ch3_t: "सुलैमान", ch3_d: "मंदिर का चुना हुआ निर्माता।",
+                ch4_t: "आसाप और हेमान", ch4_d: "आराधना के नियुक्त नेता।",
+                ch5_t: "गाद और नातान", ch5_d: "परमेश्वर के भविष्यद्वक्ता।",
+                ch6_t: "उज्जा", ch6_d: "संदूक को छूने के कारण मृत्यु।",
+                cats_title: "10 भाग विश्लेषण",
+                cat1_t: "आदम से दाऊद तक", cat1_d: "ये अध्याय आदम से लेकर राजा दाऊद तक की वंशावली का विस्तार से वर्णन करते हैं। यह स्पष्ट रूप से दिखाता है कि परमेश्वर ने अपने लोगों और दाऊद के शाही वंश को कैसे संरक्षित किया। यह लंबी सूची लौटने वाले निर्वासितों को आशा देने के लिए लिखी गई थी।",
+                cat2_t: "अन्य गोत्रों की वंशावली", cat2_d: "इस खंड में यहूदा के साथ-साथ इसराइल के बाकी गोत्रों का पारिवारिक इतिहास शामिल है। यह लेवियों के कर्तव्यों और यरूशलेम में रहने वालों के नामों का भी उल्लेख करता है। यह बताता है कि परमेश्वर की दृष्टि में हर गोत्र का एक विशेष उद्देश्य है।",
+                cat3_t: "शाऊल की मृत्यु", cat3_d: "यह अध्याय बताता है कि परमेश्वर की अवज्ञा के कारण शाऊल का जीवन कितनी दुखद रूप से समाप्त हुआ। उसने न केवल परमेश्वर के वचन की अवज्ञा की, बल्कि एक माध्यम से परामर्श भी किया। यह आने वाली पीढ़ियों के लिए एक चेतावनी है।",
+                cat4_t: "दाऊद का राज्याभिषेक", cat4_d: "शाऊल की मृत्यु के बाद, इसराइल के सभी नेता हेब्रोन आए और दाऊद को अपना राजा चुना। दाऊद ने यरूशलेम पर विजय प्राप्त की और इसका नाम 'दाऊद का नगर' रखा। उसके शूरवीरों के वीर कर्मों का यहाँ वर्णन किया गया है।",
+                cat5_t: "संदूक को लाना", cat5_d: "दाऊद संदूक को यरूशलेम लाने का प्रयास करता है, लेकिन परमेश्वर के नियमों का पालन न करने के कारण उज्जा की मृत्यु हो जाती है। बाद में, संदूक को याजकों द्वारा पूरी श्रद्धा और संगीत के साथ सिय्योन लाया जाता है। यह आराधना में पवित्रता सिखाता है।",
+                cat6_t: "दाऊद की वाचा", cat6_d: "दाऊद परमेश्वर के लिए एक मंदिर बनाना चाहता है, लेकिन परमेश्वर नातान के माध्यम से बताते हैं कि सुलैमान यह काम करेगा। परमेश्वर दाऊद के साथ एक अनन्त वाचा बांधते हैं। यह वादा अंततः यीशु मसीह में पूरी तरह से पूरा हुआ।",
+                cat7_t: "दाऊद की सैन्य विजय", cat7_d: "परमेश्वर की उपस्थिति के साथ, दाऊद ने पलिश्तियों, मोआबियों और अरामियों को हराकर महान विजय प्राप्त की। उसने अपने राज्य का विस्तार किया और पूर्ण शांति स्थापित की। यह परमेश्वर पर निर्भर रहने वाले नेता को मिलने वाली जीत को दर्शाता है।",
+                cat8_t: "जनगणना और सजा", cat8_d: "शैतान के उकसाने पर, दाऊद ने सेना की गिनती की और परमेश्वर की दृष्टि में पाप किया, जिससे इसराइल में महामारी फैल गई। दाऊद ने पश्चाताप किया और अरौनाह के खलिहान में एक वेदी बनाई। यह स्थान बाद में महान मंदिर की नींव बना।",
+                cat9_t: "मंदिर की तैयारी", cat9_d: "यद्यपि दाऊद ने मंदिर का निर्माण नहीं किया, उसने इसके लिए सोना, चांदी और पत्थर प्रचुर मात्रा में एकत्र किए। उसने लेवियों और गायकों को आराधना के लिए व्यवस्थित किया। परमेश्वर के काम के लिए उसकी तैयारी एक महान आध्यात्मिक उदाहरण है।",
+                cat10_t: "दाऊद के अंतिम शब्द", cat10_d: "अपने जीवन के अंत में, दाऊद ने इसराइल के सभी नेताओं को बुलाया और सुलैमान को राजा घोषित किया। जब लोगों ने खुशी से अपना दान दिया, तो दाऊद ने परमेश्वर की स्तुति की। अंत में, दाऊद की मृत्यु हो जाती है और सुलैमान सिंहासन पर बैठता है।"
+            },
+            ta: {
+                bookTitle: "1 நாளாகமம்", bookSubtitle: "தாவீதின் வம்சாவளி & ஆராதனை - விரிவான ஆய்வு",
+                lbl_author: "ஆசிரியர்", val_author: "எஸ்றா (பாரம்பரியம்)",
+                lbl_date: "காலம்", val_date: "கி.மு. 430",
+                lbl_place: "இடம்", val_place: "எருசலேம்",
+                lbl_lang: "மொழி", val_lang: "எபிரேயம்",
+                lbl_chapters: "அதிகாரங்கள்", val_chapters: "29",
+                lbl_theme: "கருப்பொருள்", val_theme: "ஆராதனை",
+                intro_title: "அறிமுகம்",
+                intro_content: "<p>1 நாளாகமம் சாமுவேல் மற்றும் ராஜாக்களில் காணப்படும் வரலாற்றை ஆன்மீகக் கண்ணோட்டத்துடன் மீண்டும் கூறுகிறது. இது தாவீதின் ஆட்சி மற்றும் தேவாலய வழிபாட்டின் முக்கியத்துவத்தை வலியுறுத்துகிறது.</p>",
+                auth_note_title: "வரலாற்று நோக்கம்",
+                auth_note_text: "சிறையிருப்பிலிருந்து திரும்பிய யூதர்களுக்கு நம்பிக்கையை அளிப்பதற்காக இந்த புத்தகம் எழுதப்பட்டது. இது அவர்களின் ஆன்மீக வேர்களை அவர்களுக்கு நினைவூட்டுகிறது.",
+                surprise_title: "ஆச்சரியமான உண்மை",
+                surprise_text: "முதல் 9 அதிகாரங்கள் பைபிளில் உள்ள மிக நீண்ட வம்சாவளியைக் கொண்டுள்ளன. இது சிறையிருப்பிலிருந்து திரும்பியவர்களுக்குத் தேவனுடைய மாறாத வாக்குறுதியின் சான்றாக இருந்தது.",
+                christ_title: "கிறிஸ்துவின் நிழல்கள்",
+                christ_text: "இந்த புத்தகம் தாவீதின் பாவங்களை (உதாரணமாக பத்சேபாள்) மறைத்து அவரை ஒரு இலட்சிய ராஜாவாகக் காட்டுகிறது. இது குற்றமற்ற ராஜாவாகிய இயேசு கிறிஸ்துவை சுட்டிக்காட்டுகிறது.",
+                history_title: "வரலாற்றுச் சான்றுகள்",
+                history_text: "பரம்பரை பட்டியல்கள் மற்றும் அதிகாரப்பூர்வ பதிவுகளின் விரிவான பயன்பாடு பாரசீக காலத்தின் நிர்வாக நடைமுறைகளுடன் ஒத்திருக்கிறது.",
+                chars_title: "முக்கிய கதாபாத்திரங்கள்",
+                ch1_t: "தாவீது", ch1_d: "தேவனுடைய இருதயத்திற்கு ஏற்றவர்.",
+                ch2_t: "சவுல்", ch2_d: "கீழ்ப்படியாமைக்கு உதாரணம்.",
+                ch3_t: "சாலொமோன்", ch3_d: "ஆலயத்தைக் கட்டத் தேர்ந்தெடுக்கப்பட்டவர்.",
+                ch4_t: "ஆசாப் & ஏமான்", ch4_d: "ஆராதனைத் தலைவர்கள்.",
+                ch5_t: "காத் & நாத்தான்", ch5_d: "தேவனுடைய தீர்க்கதரிசிகள்.",
+                ch6_t: "ஊசா", ch6_d: "பெட்டியைத் தொட்டதால் மரித்தவர்.",
+                cats_title: "10 பிரிவுகள்",
+                cat1_t: "ஆதாம் முதல் தாவீது வரை", cat1_d: "மனித வரலாற்றின் தொடக்கமான ஆதாம் முதல் தாவீது ராஜா வரையிலான வம்சாவளியை இந்த அதிகாரங்கள் விவரிக்கின்றன. தேவன் தனது மக்களை, குறிப்பாக தாவீதின் ராஜ வம்சத்தை எவ்வாறு பாதுகாத்தார் என்பதை இது காட்டுகிறது. சிறையிருப்பிலிருந்து திரும்பியவர்களுக்கு நம்பிக்கையை அளிக்க இந்த பட்டியல் எழுதப்பட்டது.",
+                cat2_t: "மற்ற கோத்திரங்களின் வம்சாவளி", cat2_d: "யூதாவுடன் இஸ்ரவேலின் மற்ற கோத்திரங்களின் குடும்ப வரலாறும் இங்கு உள்ளது. லேவியர்களின் கடமைகள் மற்றும் எருசலேமில் வாழ்ந்தவர்களின் பெயர்களும் குறிப்பிடப்பட்டுள்ளன. தேவனுடைய கண்களில் ஒவ்வொரு கோத்திரத்திற்கும் ஒரு சிறப்பு நோக்கம் உள்ளது என்பதை இது தெரிவிக்கிறது.",
+                cat3_t: "சவுலின் மரணம்", cat3_d: "இஸ்ரவேலின் முதல் ராஜாவான சவுலின் வாழ்க்கை தேவனுக்குக் கீழ்ப்படியாமையால் எவ்வாறு சோகமாக முடிந்தது என்பதை இது விளக்குகிறது. அவர் குறிசொல்லுபவளை நாடியதால் தன் அழிவைத் தேடிக்கொண்டார். தேவனுடைய கட்டளைகளை மீறுபவர்களின் முடிவுக்கு இது ஒரு எச்சரிக்கையாகும்.",
+                cat4_t: "தாவீதின் முடிசூட்டு விழா", cat4_d: "சவுலின் மரணத்திற்குப் பிறகு, இஸ்ரவேலின் தலைவர்கள் தாவீதை ராஜாவாக முடிசூட்டினர். தாவீது எருசலேமைக் கைப்பற்றி அதற்கு 'தாவீதின் நகரம்' என்று பெயரிட்டார். அவருக்கு ஆதரவாக நின்ற பராக்கிரமசாலிகளின் வீரச் செயல்கள் இங்கு விவரிக்கப்பட்டுள்ளன.",
+                cat5_t: "பெட்டியை மாற்றுதல்", cat5_d: "தாவீது உடன்படிக்கைப் பெட்டியை எருசலேமுக்குக் கொண்டுவர முயன்றபோது, தேவனுடைய விதிகளைப் பின்பற்றாததால் ஊசா இறக்கிறார். பின்னர், பெட்டி ஆசாரியர்களால் பயபக்தியுடனும் இசையுடனும் கொண்டுவரப்படுகிறது. ஆராதனையில் பரிசுத்தம் அவசியம் என்பதை இது கற்பிக்கிறது.",
+                cat6_t: "தாவீதின் உடன்படிக்கை", cat6_d: "தாவீது தேவனுக்கு ஒரு ஆலயத்தைக் கட்ட விரும்புகிறார், ஆனால் தேவன் அந்த வேலையை சாலொமோன் செய்வார் என்று கூறுகிறார். தேவன் தாவீதுடன் ஒரு நித்திய உடன்படிக்கை செய்து, அவரது சிங்காசனம் என்றென்றும் நிலைத்திருக்கும் என்று வாக்குறுதி அளிக்கிறார். இது இயேசு கிறிஸ்துவின் மூலம் நிறைவேறியது.",
+                cat7_t: "தாவீதின் இராணுவ வெற்றிகள்", cat7_d: "தேவனுடைய பிரசன்னத்தால், தாவீது பெலிஸ்தியர்களையும் மோவாபியர்களையும் தோற்கடித்து பெரும் வெற்றிகளைப் பெற்றார். அவர் ராஜ்யத்தை விரிவுபடுத்தி முழுமையான சமாதானத்தைக் கொண்டுவந்தார். தேவனைச் சார்ந்திருக்கும் ஒரு தலைவருக்குக் கிடைக்கும் வெற்றியை இது காட்டுகிறது.",
+                cat8_t: "கணக்கெடுப்பு & தண்டனை", cat8_d: "சாத்தானின் தூண்டுதலால், தாவீது பெருமையுடன் படையைக் கணக்கிட்டு பாவம் செய்கிறார், இதனால் இஸ்ரவேலில் வாதை ஏற்படுகிறது. தாவீது மனந்திரும்பி, அர்னானின் களத்தை விலைக்கு வாங்கி பலிபீடம் கட்டுகிறார். இந்த இடமே பின்னர் பெரிய ஆலயத்தின் அடித்தளமாக மாறியது.",
+                cat9_t: "ஆலயத்திற்கான தயாரிப்பு", cat9_d: "தாவீது ஆலயத்தைக் கட்டாவிட்டாலும், அதற்கான தங்கம், வெள்ளி மற்றும் கற்களை ஏராளமாகச் சேகரிக்கிறார். லேவியர்களையும் பாடகர்களையும் ஆராதனைக்காக ஒழுங்குபடுத்துகிறார். தேவனுடைய வேலைக்காக அவர் செய்த முன்னேற்பாடுகள் எதிர்கால சந்ததியினருக்கு ஒரு சிறந்த ஆன்மீக உதாரணமாகும்.",
+                cat10_t: "தாவீதின் இறுதி வார்த்தைகள்", cat10_d: "தன் வாழ்வின் முடிவில், தாவீது இஸ்ரவேலின் தலைவர்களை அழைத்து சாலொமோனை ராஜாவாக அறிவிக்கிறார். மக்கள் மகிழ்ச்சியுடன் காணிக்கை செலுத்தியபோது தாவீது தேவனைத் துதிக்கிறார். இறுதியில், தாவீது முழுமையான ஆயுளுடன் மரிக்க, சாலொமோன் சிங்காசனத்தில் அமர்கிறார்."
+            },
+            kn: {
+                bookTitle: "1 ಪೂರ್ವಕಾಲದ ವೃತ್ತಾಂತ", bookSubtitle: "ದಾವೀದನ ವಂಶಾವಳಿ ಮತ್ತು ಆರಾಧನೆ - ಸಮಗ್ರ ಅಧ್ಯಯನ",
+                lbl_author: "ಲೇಖಕ", val_author: "ಎಜ್ರ (ಸಂಪ್ರದಾಯ)",
+                lbl_date: "ದಿನಾಂಕ", val_date: "ಕ್ರಿ.ಪೂ 430",
+                lbl_place: "ಸ್ಥಳ", val_place: "ಜೆರುಸಲೆಮ್",
+                lbl_lang: "ಭಾಷೆ", val_lang: "ಹೀಬ್ರೂ",
+                lbl_chapters: "ಅಧ್ಯಾಯಗಳು", val_chapters: "29",
+                lbl_theme: "ವಿಷಯ", val_theme: "ಆರಾಧನೆ",
+                intro_title: "ಪರಿಚಯ",
+                intro_content: "<p>1 ಪೂರ್ವಕಾಲದ ವೃತ್ತಾಂತವು ಸಮುವೇಲ ಮತ್ತು ಅರಸುಗಳಲ್ಲಿ ಕಂಡುಬರುವ ಇತಿಹಾಸವನ್ನು ಆಧ್ಯಾತ್ಮಿಕ ದೃಷ್ಟಿಕೋನದಿಂದ ಮರುಕಳಿಸುತ್ತದೆ. ಇದು ದಾವೀದನ ಆಳ್ವಿಕೆ ಮತ್ತು ಆರಾಧನೆಯ ಪ್ರಾಮುಖ್ಯತೆಯ ಮೇಲೆ ಕೇಂದ್ರೀಕೃತವಾಗಿದೆ.</p>",
+                auth_note_title: "ಐತಿಹಾಸಿಕ ಉದ್ದೇಶ",
+                auth_note_text: "ಬ್ಯಾಬಿಲೋನ್ ಸೆರೆವಾಸದಿಂದ ಹಿಂದಿರುಗಿದ ಯೆಹೂದ್ಯರಿಗೆ ಭರವಸೆಯನ್ನು ನೀಡಲು ಈ ಪುಸ್ತಕವನ್ನು ಬರೆಯಲಾಗಿದೆ. ಇದು ಅವರ ಆಧ್ಯಾತ್ಮಿಕ ಬೇರುಗಳನ್ನು ನೆನಪಿಸುತ್ತದೆ.",
+                surprise_title: "ಆಶ್ಚರ್ಯಕರ ಸಂಗತಿ",
+                surprise_text: "ಮೊದಲ 9 ಅಧ್ಯಾಯಗಳು ಬೈಬಲ್‌ನಲ್ಲಿ ಅತ್ಯಂತ ಉದ್ದವಾದ ವಂಶಾವಳಿಯನ್ನು ಹೊಂದಿವೆ. ಹಿಂದಿರುಗಿದ ಜನರಿಗೆ ಇದು ದೇವರ ಮುರಿಯದ ವಾಗ್ದಾನದ ಪುರಾವೆಯಾಗಿತ್ತು.",
+                christ_title: "ಕ್ರಿಸ್ತನ ಛಾಯೆಗಳು",
+                christ_text: "ಈ ಪುಸ್ತಕವು ದಾವೀದನ ನೈತಿಕ ವೈಫಲ್ಯಗಳನ್ನು ಬಿಟ್ಟುಬಿಡುತ್ತದೆ ಮತ್ತು ಅವನನ್ನು ಆದರ್ಶ ರಾಜನನ್ನಾಗಿ ಚಿತ್ರಿಸುತ್ತದೆ. ಇದು ಪಾಪರಹಿತ ರಾಜನಾದ ಯೇಸು ಕ್ರಿಸ್ತನನ್ನು ಸೂಚಿಸುತ್ತದೆ.",
+                history_title: "ಐತಿಹಾಸಿಕ ಪುರಾವೆ",
+                history_text: "ಅಧಿಕೃತ ದಾಖಲೆಗಳು ಮತ್ತು ವಂಶಾವಳಿಗಳ ವ್ಯಾಪಕ ಬಳಕೆಯು ಪರ್ಷಿಯನ್ ಅವಧಿಯ ಆಡಳಿತಾತ್ಮಕ ಅಭ್ಯಾಸಗಳೊಂದಿಗೆ ಹೊಂದಿಕೆಯಾಗುತ್ತದೆ.",
+                chars_title: "ಪ್ರಮುಖ ಪಾತ್ರಗಳು",
+                ch1_t: "ದಾವೀದ", ch1_d: "ದೇವರ ಹೃದಯಕ್ಕೆ ಮೆಚ್ಚಿದವನು.",
+                ch2_t: "ಸೌಲ", ch2_d: "ಅವಜ್ಞೆಯ ದುರಂತ ಉದಾಹರಣೆ.",
+                ch3_t: "ಸೊಲೊಮೋನ್", ch3_d: "ದೇವಾಲಯದ ಆಯ್ಕೆಯಾದ ನಿರ್ಮಾಪಕ.",
+                ch4_t: "ಆಸಾಫ್ & ಹೇಮಾನ್", ch4_d: "ಆರಾಧನೆಯ ನಾಯಕರು.",
+                ch5_t: "ಗಾದ್ & ನಾತಾನ್", ch5_d: "ದೇವರ ಪ್ರವಾದಿಗಳು.",
+                ch6_t: "ಉಜ್ಜಾ", ch6_d: "ಮಂಜೂಷವನ್ನು ಮುಟ್ಟಿ ಸತ್ತವನು.",
+                cats_title: "10 ವಿಭಾಗಗಳು",
+                cat1_t: "ಆದಾಮನಿಂದ ದಾವೀದನವರೆಗೆ", cat1_d: "ಈ ಅಧ್ಯಾಯಗಳು ಆದಾಮನಿಂದ ರಾಜ ದಾವೀದನವರೆಗಿನ ವಂಶಾವಳಿಯನ್ನು ವಿವರಿಸುತ್ತವೆ. ದೇವರು ತನ್ನ ಜನರನ್ನು ಮತ್ತು ದಾವೀದನ ರಾಜಮನೆತನವನ್ನು ಹೇಗೆ ರಕ್ಷಿಸಿದನು ಎಂಬುದನ್ನು ಇದು ತೋರಿಸುತ್ತದೆ. ಹಿಂದಿರುಗಿದ ಜನರಿಗೆ ಭರವಸೆಯನ್ನು ತುಂಬಲು ಈ ಪಟ್ಟಿಯನ್ನು ಬರೆಯಲಾಗಿದೆ.",
+                cat2_t: "ಇತರ ಗೋತ್ರಗಳ ವಂಶಾವಳಿ", cat2_d: "ಯೂದಾಯದ ಜೊತೆಗೆ ಇಸ್ರೇಲ್‌ನ ಉಳಿದ ಗೋತ್ರಗಳ ಕೌಟುಂಬಿಕ ಇತಿಹಾಸವನ್ನು ಇದು ಒಳಗೊಂಡಿದೆ. ಲೇವಿಗಳ ಕರ್ತವ್ಯಗಳು ಮತ್ತು ಜೆರುಸಲೆಮ್‌ನಲ್ಲಿ ವಾಸಿಸುತ್ತಿದ್ದವರ ಹೆಸರುಗಳನ್ನು ಸಹ ಉಲ್ಲೇಖಿಸಲಾಗಿದೆ. ದೇವರ ದೃಷ್ಟಿಯಲ್ಲಿ ಪ್ರತಿಯೊಂದು ಗೋತ್ರಕ್ಕೂ ವಿಶೇಷ ಉದ್ದೇಶವಿದೆ ಎಂದು ಇದು ತಿಳಿಸುತ್ತದೆ.",
+                cat3_t: "ಸೌಲನ ಮರಣ", cat3_d: "ಇಸ್ರೇಲ್‌ನ ಮೊದಲ ರಾಜನಾದ ಸೌಲನ ಜೀವನವು ದೇವರಿಗೆ ಅವಿಧೇಯನಾದ ಕಾರಣ ಹೇಗೆ ದುರಂತವಾಗಿ ಅಂತ್ಯಗೊಂಡಿತು ಎಂಬುದನ್ನು ಇದು ವಿವರಿಸುತ್ತದೆ. ಅವನು ಮಾಟಗಾತಿಯನ್ನು ಸಂಪರ್ಕಿಸುವ ಮೂಲಕ ತನ್ನ ಪತನವನ್ನು ತಂದುಕೊಂಡನು. ದೇವರ ಆಜ್ಞೆಗಳನ್ನು ಮೀರುವವರ ಭವಿಷ್ಯದ ಬಗ್ಗೆ ಇದೊಂದು ಎಚ್ಚರಿಕೆಯಾಗಿದೆ.",
+                cat4_t: "ದಾವೀದನ ಪಟ್ಟಾಭಿಷೇಕ", cat4_d: "ಸೌಲನ ಮರಣದ ನಂತರ, ಇಸ್ರೇಲ್‌ನ ಹಿರಿಯರು ದಾವೀದನನ್ನು ರಾಜನನ್ನಾಗಿ ಕಿರೀಟಧಾರಣೆ ಮಾಡಿದರು. ದಾವೀದನು ಜೆರುಸಲೆಮ್ ಅನ್ನು ವಶಪಡಿಸಿಕೊಂಡು ಅದಕ್ಕೆ 'ದಾವೀದನ ನಗರ' ಎಂದು ಹೆಸರಿಟ್ಟನು. ಅವನಿಗೆ ಬೆಂಬಲವಾಗಿ ನಿಂತ ಶೂರರ ವೀರಗಾಥೆಗಳನ್ನು ಇಲ್ಲಿ ಅದ್ಭುತವಾಗಿ ವರ್ಣಿಸಲಾಗಿದೆ.",
+                cat5_t: "ಮಂಜೂಷದ ಸ್ಥಳಾಂತರ", cat5_d: "ದಾವೀದನು ಮಂಜೂಷವನ್ನು ಜೆರುಸಲೆಮ್‌ಗೆ ತರಲು ಪ್ರಯತ್ನಿಸಿದಾಗ, ದೇವರ ನಿಯಮಗಳನ್ನು ಪಾಲಿಸದ ಕಾರಣ ಉಜ್ಜಾ ಸಾಯುತ್ತಾನೆ. ನಂತರ, ಅದನ್ನು ಯಾಜಕರು ಭಕ್ತಿಯಿಂದ ಮತ್ತು ಸಂಗೀತದೊಂದಿಗೆ ತರುತ್ತಾರೆ. ಆರಾಧನೆಯಲ್ಲಿ ಪವಿತ್ರತೆ ಎಷ್ಟು ಅವಶ್ಯಕ ಎಂಬುದನ್ನು ಇದು ಕಲಿಸುತ್ತದೆ.",
+                cat6_t: "ದಾವೀದನ ಒಡಂಬಡಿಕೆ", cat6_d: "ದಾವೀದನು ದೇವರಿಗೆ ದೇವಾಲಯವನ್ನು ಕಟ್ಟಲು ಬಯಸಿದಾಗ, ದೇವರು ನಾತಾನನ ಮೂಲಕ ಆ ಕೆಲಸವನ್ನು ಸೊಲೊಮೋನನು ಮಾಡುತ್ತಾನೆ ಎಂದು ಹೇಳುತ್ತಾನೆ. ದೇವರು ದಾವೀದನೊಂದಿಗೆ ಶಾಶ್ವತ ಒಡಂಬಡಿಕೆಯನ್ನು ಮಾಡುತ್ತಾನೆ. ಈ ವಾಗ್ದಾನವು ಯೇಸು ಕ್ರಿಸ್ತನ ಮೂಲಕ ಸಂಪೂರ್ಣವಾಗಿ ನೆರವೇರಿತು.",
+                cat7_t: "ದಾವೀದನ ಮಿಲಿಟರಿ ವಿಜಯಗಳು", cat7_d: "ದೇವರ ಉಪಸ್ಥಿತಿಯಿಂದ, ದಾವೀದನು ಫಿಲಿಷ್ಟಿಯರು ಮತ್ತು ಮೊವಾಬ್ಯರನ್ನು ಸೋಲಿಸಿ ದೊಡ್ಡ ವಿಜಯಗಳನ್ನು ಸಾಧಿಸಿದನು. ಅವನು ತನ್ನ ರಾಜ್ಯವನ್ನು ವಿಸ್ತರಿಸಿ ಸಂಪೂರ್ಣ ಶಾಂತಿಯನ್ನು ತಂದನು. ದೇವರ ಮೇಲೆ ಅವಲಂಬಿತವಾಗಿರುವ ನಾಯಕನಿಗೆ ದೇವರು ನೀಡುವ ವಿಜಯವನ್ನು ಇದು ಸಾಕ್ಷೀಕರಿಸುತ್ತದೆ.",
+                cat8_t: "ಜನಗಣತಿ & ಶಿಕ್ಷೆ", cat8_d: "ಸೈತಾನನ ಪ್ರೇರಣೆಯಿಂದ, ದಾವೀದನು ಹೆಮ್ಮೆಯಿಂದ ಸೈನ್ಯವನ್ನು ಎಣಿಸಿ ಪಾಪ ಮಾಡುತ್ತಾನೆ, ಇದರಿಂದ ಇಸ್ರೇಲ್‌ನಲ್ಲಿ ಪ್ಲೇಗ್ ಉಂಟಾಗುತ್ತದೆ. ದಾವೀದನು ಪಶ್ಚಾತ್ತಾಪಪಟ್ಟು ಅರೌನನ ಕಣದಲ್ಲಿ ಯಜ್ಞವೇದಿಕೆಯನ್ನು ಕಟ್ಟುತ್ತಾನೆ. ಈ ಸ್ಥಳವು ನಂತರ ಭವ್ಯವಾದ ದೇವಾಲಯದ ಅಡಿಪಾಯವಾಯಿತು.",
+                cat9_t: "ದೇವಾಲಯದ ಸಿದ್ಧತೆ", cat9_d: "ದಾವೀದನು ದೇವಾಲಯವನ್ನು ಕಟ್ಟದಿದ್ದರೂ, ಅದಕ್ಕಾಗಿ ಅಪಾರ ಪ್ರಮಾಣದ ಚಿನ್ನ, ಬೆಳ್ಳಿ ಮತ್ತು ಕಲ್ಲುಗಳನ್ನು ಸಂಗ್ರಹಿಸುತ್ತಾನೆ. ಆರಾಧನೆಗಾಗಿ ಲೇವಿಗಳು ಮತ್ತು ಗಾಯಕರನ್ನು ವ್ಯವಸ್ಥೆಗೊಳಿಸುತ್ತಾನೆ. ದೇವರ ಕೆಲಸಕ್ಕಾಗಿ ಅವನ ಸಿದ್ಧತೆಯು ಭವಿಷ್ಯದ ಪೀಳಿಗೆಗೆ ಉತ್ತಮ ಆಧ್ಯಾತ್ಮಿಕ ಉದಾಹರಣೆಯಾಗಿದೆ.",
+                cat10_t: "ದಾವೀದನ ಕೊನೆಯ ಮಾತುಗಳು", cat10_d: "ತನ್ನ ಜೀವನದ ಕೊನೆಯಲ್ಲಿ, ದಾವೀದನು ಇಸ್ರೇಲ್‌ನ ನಾಯಕರನ್ನು ಕರೆದು ಸೊಲೊಮೋನನನ್ನು ರಾಜನೆಂದು ಘೋಷಿಸುತ್ತಾನೆ. ಜನರು ಸಂತೋಷದಿಂದ ಕಾಣಿಕೆಗಳನ್ನು ನೀಡಿದಾಗ ದಾವೀದನು ದೇವರನ್ನು ಸ್ತುತಿಸುತ್ತಾನೆ. ಅಂತಿಮವಾಗಿ, ದಾವೀದನು ಮರಣಹೊಂದುತ್ತಾನೆ ಮತ್ತು ಸೊಲೊಮೋನನು ಸಿಂಹಾಸನವನ್ನೇರುತ್ತಾನೆ."
+            },
+            ml: {
+                bookTitle: "1 ദിനവൃത്താന്തം", bookSubtitle: "ദാവീദിന്റെ വംശാവലിയും ആരാധനയും - സമഗ്ര പഠനം",
+                lbl_author: "രചയിതാവ്", val_author: "എസ്രാ (പാരമ്പര്യം)",
+                lbl_date: "കാലഘട്ടം", val_date: "430 BC",
+                lbl_place: "സ്ഥലം", val_place: "ജെറുസലേം",
+                lbl_lang: "ഭാಷ", val_lang: "ഹീബ്രു",
+                lbl_chapters: "അധ്യായങ്ങൾ", val_chapters: "29",
+                lbl_theme: "പ്രമേയം", val_theme: "ആരാധന",
+                intro_title: "ആമുഖം",
+                intro_content: "<p>ശമുവേലിലും രാജാക്കന്മാരിലും കാണുന്ന ചരിത്രത്തെ ആത്മീയ വീക്ഷണകോണിൽ നിന്ന് 1 ദിനവൃത്താന്തം പുനരാവിഷ്കരിക്കുന്നു. ദാവീദിന്റെ ഭരണത്തിലും ആരാധനയുടെ പ്രാധാന്യത്തിലുമാണ് ഇത് ശ്രദ്ധ കേന്ദ്രീകരിക്കുന്നത്.</p>",
+                auth_note_title: "ചരിത്രപരമായ ഉദ്ദേശ്യം",
+                auth_note_text: "ബാബിലോൺ പ്രവാസത്തിൽ നിന്ന് മടങ്ങിവന്ന യഹൂദന്മാർക്ക് പ്രത്യാശ നൽകാനാണ് ഈ പുസ്തകം എഴുതിയത്. ഇത് അവരുടെ ആത്മീയ വേരുകളെക്കുറിച്ച് അവരെ ഓർമ്മിപ്പിക്കുന്നു.",
+                surprise_title: "അത്ഭുതകരമായ വസ്തുത",
+                surprise_text: "ആദ്യത്തെ 9 അധ്യായങ്ങളിൽ ബൈബിളിലെ ഏറ്റവും ദൈർഘ്യമേറിയ വംശാവലിയാണുള്ളത്. മടങ്ങിവന്ന പ്രവാസികൾക്ക് ഇത് ദൈവത്തിന്റെ ലംഘിക്കപ്പെടാത്ത വാഗ്ദാനത്തിന്റെ തെളിവായിരുന്നു.",
+                christ_title: "ക്രിസ്തുവിന്റെ നിഴലുകൾ",
+                christ_text: "ഈ പുസ്തകം ദാവീദിന്റെ ധാർമ്മിക പരാജയങ്ങളെ (ഉദാ: ബത്ത്‌ശേബ) ഒഴിവാക്കി അവനെ ഒരു മാതൃകാ രാജാവായി അവതരിപ്പിക്കുന്നു. ഇത് പാപമില്ലാത്ത രാജാവായ യേശുക്രിസ്തുവിനെ ചൂണ്ടിക്കാണിക്കുന്നു.",
+                history_title: "ചരിത്രപരമായ തെളിവുകൾ",
+                history_text: "വംശാവലികളുടെയും ഔദ്യോഗിക രേഖകളുടെയും വിപുലമായ ഉപയോഗം പേർഷ്യൻ കാലഘട്ടത്തിലെ ഭരണപരമായ രീതികളുമായി യോജിക്കുന്നു.",
+                chars_title: "പ്രധാന കഥാപാത്രങ്ങൾ",
+                ch1_t: "ദാവീദ്", ch1_d: "ദൈവത്തിന്റെ ഹൃദയപ്രകാരമുള്ള മനുഷ്യൻ.",
+                ch2_t: "ശൗൽ", ch2_d: "അനുസരണക്കേടിന്റെ ദുരന്ത ഉദാഹരണം.",
+                ch3_t: "ശലോമോൻ", ch3_d: "ദൈവാലയം പണിയാൻ തിരഞ്ഞെടുക്കപ്പെട്ടവൻ.",
+                ch4_t: "ആസാഫും ഹേമാനും", ch4_d: "ആരാധനാ നേതാക്കൾ.",
+                ch5_t: "ഗാദും നാഥാനും", ch5_d: "ദൈവത്തിന്റെ പ്രവാചകന്മാർ.",
+                ch6_t: "ഉസ്സാ", ch6_d: "പെട്ടകത്തിൽ തൊട്ടതിനാൽ മരിച്ചവൻ.",
+                cats_title: "10 വിഭാഗങ്ങൾ",
+                cat1_t: "ആദാം മുതൽ ദാവീദ് വരെ", cat1_d: "മനുഷ്യചരിത്രത്തിന്റെ ആരംഭമായ ആദാം മുതൽ ദാവീദ് രാജാവ് വരെയുള്ള വംശാവലി ഈ അധ്യായങ്ങൾ വിശദീകരിക്കുന്നു. ദൈവം തന്റെ ജനത്തെ, പ്രത്യേകിച്ച് ദാവീദിന്റെ രാജവംശത്തെ എങ്ങനെ സംരക്ഷിച്ചുവെന്ന് ഇത് വ്യക്തമാക്കുന്നു. പ്രവാസികൾക്ക് പ്രത്യാശ നൽകാനാണ് ഈ പട്ടിക എഴുതിയത്.",
+                cat2_t: "മറ്റ് ഗോത്രങ്ങളുടെ വംശാവലി", cat2_d: "യൂദായോടൊപ്പം ഇസ്രായേലിലെ മറ്റു ഗോത്രങ്ങളുടെ കുടുംബചരിത്രവും ഇതിൽ ഉൾപ്പെടുന്നു. ലേവ്യരുടെ ചുമതലകളും യെരുശലേമിൽ താമസിച്ചിരുന്നവരുടെ പേരുകളും പരാമർശിക്കുന്നു. ദൈവത്തിന്റെ കണ്ണിൽ ഓരോ ഗോത്രത്തിനും ഒരു പ്രത്യേക ലക്ഷ്യമുണ്ടെന്ന് ഇത് തെളിയിക്കുന്നു.",
+                cat3_t: "ശൗലിന്റെ മരണം", cat3_d: "ഇസ്രായേലിലെ ആദ്യത്തെ രാജാവായ ശൗലിന്റെ ജീവിതം അനുസരണക്കേട് കാരണം എങ്ങനെ ദുരന്തമായി അവസാനിച്ചുവെന്ന് ഈ അധ്യായം വിശദീകരിക്കുന്നു. വെളിച്ചപ്പാടത്തിയെ സമീപിച്ചതിലൂടെ അവൻ തന്റെ സ്വന്തം തകർച്ച വരുത്തിവച്ചു. ദൈവകല്പനകൾ ലംഘിക്കുന്നവർക്കുള്ള ഒരു മുന്നറിയിപ്പാണിത്.",
+                cat4_t: "ദാവീദിന്റെ കിരീടധാരണം", cat4_d: "ശൗലിന്റെ മരണശേഷം, ഇസ്രായേൽ മൂപ്പന്മാർ ഹെബ്രോനിൽ വന്ന് ദാവീദിനെ രാജാവായി കിരീടമണിയിച്ചു. ദാവീദ് യെരുശലേം കീഴടക്കി അതിന് 'ദാവീദിന്റെ നഗരം' എന്ന് പേരിട്ടു. അവനെ പിന്തുണച്ച വീരന്മാരുടെ ധീരകൃത്യങ്ങൾ ഇവിടെ മനോഹരമായി വിവരിച്ചിരിക്കുന്നു.",
+                cat5_t: "പെട്ടകം കൊണ്ടുവരുന്നത്", cat5_d: "ദാവീദ് ഉടമ്പടിപെട്ടകം യെരുശലേമിലേക്ക് കൊണ്ടുവരാൻ ശ്രമിച്ചപ്പോൾ, ദൈവത്തിന്റെ നിയമങ്ങൾ പാലിക്കാത്തതിനാൽ ഉസ്സാ മരിക്കുന്നു. പിന്നീട്, പുരോഹിതന്മാർ ഭക്തിയോടും സംഗീതത്തോടും കൂടി അത് കൊണ്ടുവരുന്നു. ആരാധനയിൽ വിശുദ്ധി എത്രത്തോളം അനിവാര്യമാണെന്ന് ഇത് പഠിപ്പിക്കുന്നു.",
+                cat6_t: "ദാവീദിന്റെ ഉടമ്പടി", cat6_d: "ദാവീദ് ദൈവത്തിന് ഒരു ആലയം പണിയാൻ ആഗ്രഹിച്ചപ്പോൾ, ആ ജോലി ശലോമോൻ ചെയ്യുമെന്ന് നാഥാൻ പ്രവാചകൻ മുഖേന ദൈവം പറയുന്നു. ദൈവം ദാവീദുമായി ഒരു നിത്യ ഉടമ്പടി ചെയ്യുന്നു. ഈ വാഗ്ദാനം യേശുക്രിസ്തുവിലൂടെ പൂർണ്ണമായി നിറവേറി.",
+                cat7_t: "ദാവീദിന്റെ സൈനിക വിജയങ്ങൾ", cat7_d: "ദൈവത്തിന്റെ സാന്നിധ്യത്താൽ ദാവീദ് ഫിലിസ്ത്യരെയും മോവാബ്യരെയും പരാജയപ്പെടുത്തി മികച്ച വിജയങ്ങൾ നേടി. അവൻ രാജ്യം വികസിപ്പിക്കുകയും സമ്പൂർണ്ണ സമാധാനം കൊണ്ടുവരികയും ചെയ്തു. ദൈവത്തിൽ ആശ്രയിക്കുന്ന ഒരു നേതാവിന് ദൈവം നൽകുന്ന വിജയത്തെ ഇത് സാക്ഷ്യപ്പെടുത്തുന്നു.",
+                cat8_t: "ജനസംഖ്യയും ശിക്ഷയും", cat8_d: "സാത്താന്റെ പ്രേരണയാൽ ദാവീദ് അഹങ്കാരത്തോടെ സൈന്യത്തെ എണ്ണി പാപം ചെയ്യുന്നു, ഇത് ഇസ്രായേലിൽ ഒരു മഹാമാരിക്ക് കാരണമാകുന്നു. ദാവീദ് അനുതപിച്ച് ഓർന്നാന്റെ കളത്തിൽ ഒരു യാഗപീഠം പണിയുന്നു. ഈ സ്ഥലം പിന്നീട് വലിയ ദൈവാലയത്തിന്റെ അടിസ്ഥാനമായി മാറി.",
+                cat9_t: "ദൈവാലയത്തിനായുള്ള ഒരുക്കം", cat9_d: "ദാവീദ് ദൈവാലയം പണിതില്ലെങ്കിലും അതിനായി സ്വർണ്ണവും വെള്ളിയും കല്ലുകളും ധാരാളമായി ശേഖരിക്കുന്നു. ആരാധനയ്ക്കായി അവൻ ലേവ്യരെയും ഗായകരെയും ക്രമീകരിക്കുന്നു. ദൈവവേലയ്ക്കുള്ള അവന്റെ ഒരുക്കം ഭാവി തലമുറകൾക്ക് ഒരു മികച്ച ആത്മീയ മാതൃകയാണ്.",
+                cat10_t: "ദാവീദിന്റെ അവസാന വാക്കുകൾ", cat10_d: "തന്റെ ജീവിതത്തിന്റെ അവസാനത്തിൽ, ദാവീദ് ഇസ്രായേൽ നേതാക്കളെ വിളിച്ച് ശലോമോനെ രാജാവായി പ്രഖ്യാപിക്കുന്നു. ജനം സന്തോഷത്തോടെ കാണിക്കകൾ അർപ്പിച്ചപ്പോൾ ദാവീദ് ദൈവത്തെ സ്തുതിക്കുന്നു. ഒടുവിൽ ദാവീദ് മരിക്കുകയും ശലോമോൻ സിംഹാസനത്തിൽ കയറുകയും ചെയ്യുന്നു."
+            }
+        };
+
+        function setLanguage(lang) {
+            document.body.setAttribute('lang', lang);
+            const data = content[lang];
+            
+            // Map text content
+            for (const [key, value] of Object.entries(data)) {
+                const el = document.getElementById(key);
+                if (el) {
+                    if (key.includes('content') || key.includes('text') || key.includes('range')) el.innerHTML = value;
+                    else el.textContent = value;
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        }
+
+        function adjustFont(size) {
+            document.documentElement.style.setProperty('--base-size', size + 'px');
+        }
+
+        // Init
+        setLanguage('te');
+    </script>
+</body>
+</html>
+```eof
